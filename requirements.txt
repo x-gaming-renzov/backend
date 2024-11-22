@@ -1,0 +1,17 @@
+pandas
+requests
+plotly
+seaborn
+matplotlib
+langchain
+pydantic
+openai
+langchain-openai 
+python-dotenv
+streamlit
+scikit-learn
+langgraph
+langsmith
+langchain_anthropic
+termcolor
+docker
