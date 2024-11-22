@@ -15,3 +15,6 @@ langsmith
 langchain_anthropic
 termcolor
 docker
+langchain_community
+chromadb
+bs4
