@@ -9,6 +9,11 @@ class FieldInfo(BaseModel):
     field_description : str = None
     field_values : List[Any]
     elements_where_field_present : List[Any]
+    field_new_name : Optional[str] = None
+
+class FieldRenameInfo(BaseModel):
+    field_new_name : str = Field( title="New Name of Field")
+    field_description : str = Field( title="Description of Field")
 
 class ExtractCorrectFieldNamesStates(BaseModel):
     file_name : str

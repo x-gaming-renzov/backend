@@ -22,6 +22,8 @@ def get_retriever(urls, model_name='text-embedding-3-small'):
     )
     retriever = vectorstore.as_retriever()
 
+    return retriever
+
     
         
 
