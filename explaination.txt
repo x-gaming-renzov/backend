@@ -1,0 +1,7 @@
+get_first_few_elements :  "algo. fecth 10 elements from the file"
+get_element_meaning : "llm. Sending the first 10 elements of the file. fist few line from file, information about data from user. And option to consult llm with retriveing knowledge from kb"
+process_field_info : algo. basically generating field details in same dict
+retrive : fetching from kb
+regenerate_field_names  : in case llm genrates same names for multiple fields. This is specially interesting for the case because there maymbe spelling mistakes in the field names or overlapping field names in different elements
+process_whole_file_in_batches : algo. process whole file in batches of 10000 elements
+rejoin_batches : algo. rejoin batches

@@ -18,3 +18,5 @@ docker
 langchain_community
 chromadb
 bs4
+gcloud
+setuptools
