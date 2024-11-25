@@ -31,12 +31,20 @@ def get_retriever(user_id, user_session_id, model_name='text-embedding-3-small')
     )
     doc_splits = text_splitter.split_documents(docs_list)
 
-    # Add to vectorDB
-    vectorstore = Chroma.from_documents(
-        documents=doc_splits,
-        collection_name="rag-chroma",
-        embedding=OpenAIEmbeddings(model=model_name),
-    )
+    try:
+        # Add to vectorDB
+        vectorstore = Chroma.from_documents(
+            documents=doc_splits,
+            collection_name="rag-chroma",
+            embedding=OpenAIEmbeddings(model=model_name),
+        )
+    except:
+        vectorstore = Chroma(
+            collection_name="rag-chroma",
+            embedding_function=OpenAIEmbeddings(model=model_name),
+        )
+
+    
     retriever = vectorstore.as_retriever()
 
     return retriever

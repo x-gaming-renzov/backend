@@ -20,3 +20,4 @@ chromadb
 bs4
 gcloud
 setuptools
+streamlit
