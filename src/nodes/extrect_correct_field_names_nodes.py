@@ -83,7 +83,7 @@ def should_retrive_for_element_info(ExtractCorrectFieldNamesStates: ExtractCorre
     last_message = ExtractCorrectFieldNamesStates.messages[-1]
     if last_message.tool_calls:
         print(colored("Decision: Retrieve element information", "green"))
-        return "retrieve"
+        return "retireve"
     print(colored("Decision: Preprocess field information", "green"))
     return "continue"
 
@@ -176,11 +176,15 @@ def retrive_node(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNamesStates)
     print(colored("Retrieving node information...", "yellow"))
     tool = retriever
     last_message = ExtractCorrectFieldNamesStates.messages[-1]
-    questions = last_message.tool_calls[0]['questions']
+    print(colored(f"Last message: {last_message.tool_calls[0]}", "blue"))
+    questions = last_message.tool_calls[0]['args']['query']
     answers = []
+    if type(questions) == str:
+        questions = [questions]
     for i in range(len(questions)):
         answers.append(tool.invoke(questions[i]))
-    tool_message = ToolMessage(content=str(answers))
+    tool_message = ToolMessage(content=str(answers), tool_call_id=last_message.tool_calls[0]['id'])
+    print(colored(f"Node information retrieved: {answers}", "green"))
     ExtractCorrectFieldNamesStates.messages.append(tool_message)
     print(colored("Node information retrieved successfully", "green"))
 

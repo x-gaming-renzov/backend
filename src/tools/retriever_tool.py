@@ -11,7 +11,7 @@ def get_retriever(user_id, user_session_id, model_name='text-embedding-3-small')
     #check if kb_urls.json exists
     try:
         with open(f"{temp_dir}/kb_urls.json", "r") as f:
-            urls = json.load(f)
+            urls = json.load(f)['urls']
     except:
         urls = []
     
