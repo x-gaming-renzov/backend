@@ -99,42 +99,57 @@ def main_app():
         else:
             st.error("Please upload a data file before generating.")
 
+    # Define placeholders for progress and logs
+    progress_placeholder = st.empty()
+    log_expander_placeholder = st.empty()
+
     if st.session_state.generate_clicked:
-        # Create a placeholder for logs
-        log_placeholder = st.empty()
-        
         # Check if the thread is alive
         thread_alive = st.session_state.thread is not None and st.session_state.thread.is_alive()
         
-        # While the thread is running, read from the queue and update the logs
         if thread_alive:
+            # Display the progress indicator
+            with progress_placeholder.container():
+                st.write("### Processing... ⏳")
+                st.write("Please wait while we process your data.")
+            
+            # Update logs
             while not st.session_state.log_queue.empty():
                 log_msg = st.session_state.log_queue.get()
                 st.session_state.log_text += log_msg + "\n"
-            log_placeholder.text(st.session_state.log_text)
+            
+            # Display logs inside the expander
+            with log_expander_placeholder.expander("Show logs", expanded=False):
+                st.text_area("Logs", st.session_state.log_text, height=200)
+            
             time.sleep(0.5)
             st.rerun()
         else:
-            # Process is completed
-            if not st.session_state.process_completed:
-                # Read any remaining logs
-                while not st.session_state.log_queue.empty():
-                    log_msg = st.session_state.log_queue.get()
-                    st.session_state.log_text += log_msg + "\n"
-                log_placeholder.text(st.session_state.log_text)
+            # Remove progress indicator
+            progress_placeholder.empty()
+            # Read any remaining logs
+            while not st.session_state.log_queue.empty():
+                log_msg = st.session_state.log_queue.get()
+                st.session_state.log_text += log_msg + "\n"
+            
+            # Display logs inside the expander
+            with log_expander_placeholder.expander("Show logs", expanded=False):
+                st.text_area("Logs", st.session_state.log_text, height=200)
+            
+            # Display the output
+            try:
+                with open(f"temp/{USER_ID}/{USER_SESSION_ID}/out.json", "r") as f:
+                    out = json.load(f)
+                    st.download_button(label="Download AI ready data", data=json.dumps(out), file_name="out.json", mime="application/json")
+            except FileNotFoundError:
+                st.error("Output file not found. There might have been an error in processing.")
                 
-                # Display the output
-                try:
-                    with open(f"temp/{USER_ID}/{USER_SESSION_ID}/out.json", "r") as f:
-                        out = json.load(f)
-                        st.download_button(label="Download AI ready data", data=json.dumps(out), file_name="out.json", mime="application/json")
-                except FileNotFoundError:
-                    st.error("Output file not found. There might have been an error in processing.")
-                    
-                # Reset the session state variables
-                st.session_state.process_completed = True
-            else:
-                log_placeholder.text(st.session_state.log_text)
+            # Reset the session state variables
+            st.session_state.process_completed = True
+    else:
+        # Ensure placeholders are empty when not processing
+        progress_placeholder.empty()
+        log_expander_placeholder.empty()
 
 if __name__ == "__main__":
     main_app()

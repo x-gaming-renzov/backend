@@ -21,3 +21,4 @@ bs4
 gcloud
 setuptools
 streamlit
+ansi2html
