@@ -2,3 +2,4 @@ temp
 .env
 data.json
 gcreds.json
+.venv
