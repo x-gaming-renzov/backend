@@ -39,7 +39,7 @@ def get_retriever(user_id, user_session_id, data_info_from_user, model_name='tex
         # Add to vectorDB
         vectorstore = Chroma.from_documents(
             documents=doc_splits,
-            collection_name=str(uuid.uuid4().hex),
+            collection_name="kb_db",
             embedding=OpenAIEmbeddings(model=model_name),
             persist_directory=temp_dir,
         )

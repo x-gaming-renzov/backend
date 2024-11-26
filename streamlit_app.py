@@ -53,11 +53,29 @@ def main_app():
     USER_ID = st.session_state.USER_ID
     USER_SESSION_ID = st.session_state.USER_SESSION_ID
 
+    def on_uploaded_file_data_kb_data_change(): 
+        if st.session_state.uploaded_file_data_kb_data is None:
+            return
+        # Save the uploaded file
+        pathlib.Path(f"temp/{USER_ID}/{USER_SESSION_ID}").mkdir(parents=True, exist_ok=True)
+        with open(f"temp/{USER_ID}/{USER_SESSION_ID}/kb_data.txt", "wb") as f:
+            f.write(st.session_state.uploaded_file_data.getvalue())
+
+        main.upload_input_files("kb_data.txt", st.session_state.uploaded_file_data_kb_data.type, USER_ID, USER_SESSION_ID)
+
+    def on_uploaded_file_data_change():
+        if st.session_state.uploaded_file_data is None:
+            return
+        # Save the uploaded file
+        pathlib.Path(f"temp/{USER_ID}/{USER_SESSION_ID}").mkdir(parents=True, exist_ok=True)
+        with open(f"temp/{USER_ID}/{USER_SESSION_ID}/{st.session_state.uploaded_file_data.name}", "wb") as f:
+            f.write(st.session_state.uploaded_file_data.getvalue())
+
     # Text input
     DATA_INFO_FROM_USER = st.text_input("What is this data about?")
 
-    uploaded_file_data = st.file_uploader("Choose a file", key='uploaded_file_data')
-    uploaded_file_data_kb_data = st.file_uploader("Choose a file", key='uploaded_file_data_kb_data')
+    uploaded_file_data = st.file_uploader("Choose a file", key='uploaded_file_data', on_change=on_uploaded_file_data_change)
+    uploaded_file_data_kb_data = st.file_uploader("Choose a file", key='uploaded_file_data_kb_data', on_change=on_uploaded_file_data_kb_data_change)
 
     kb_urls = []
 
@@ -70,25 +88,13 @@ def main_app():
     st.write("KB URLs")
     st.write(kb_urls)
 
-    if uploaded_file_data_kb_data is not None:
-        # Save the uploaded file
-        pathlib.Path(f"temp/{USER_ID}/{USER_SESSION_ID}").mkdir(parents=True, exist_ok=True)
-        with open(f"temp/{USER_ID}/{USER_SESSION_ID}/kb_data.txt", "wb") as f:
-            f.write(uploaded_file_data_kb_data.getvalue())
-
-        main.upload_input_files("kb_data.txt", uploaded_file_data_kb_data.type, USER_ID, USER_SESSION_ID)
-
-    if uploaded_file_data is not None:
-        # Save the uploaded file
-        pathlib.Path(f"temp/{USER_ID}/{USER_SESSION_ID}").mkdir(parents=True, exist_ok=True)
-        with open(f"temp/{USER_ID}/{USER_SESSION_ID}/{uploaded_file_data.name}", "wb") as f:
-            f.write(uploaded_file_data.getvalue())
+    
 #data.json -> orignal_data.json
 #data.json
     # Add generate button
     generate = st.button("Generate")
     if generate and not st.session_state.generate_clicked:
-        if uploaded_file_data is not None:
+        if st.session_state.uploaded_file_data is not None:
             st.session_state.generate_clicked = True
             print("Generate button clicked")
             #TODO : flat processing ()
@@ -96,7 +102,7 @@ def main_app():
                 kb_urls_dict = {"urls": kb_urls}
                 json.dump(kb_urls_dict, f)
             # Start the thread
-            args = (st.session_state.log_queue, USER_ID, USER_SESSION_ID, uploaded_file_data.name, DATA_INFO_FROM_USER)
+            args = (st.session_state.log_queue, USER_ID, USER_SESSION_ID, st.session_state.uploaded_file_data.name, DATA_INFO_FROM_USER)
             st.session_state.thread = threading.Thread(target=run_main_run_graph, args=args)
             st.session_state.thread.start()
         else:
@@ -138,17 +144,33 @@ def main_app():
             # Display logs inside the expander
             with log_expander_placeholder.expander("Show logs", expanded=False):
                 st.text_area("Logs", st.session_state.log_text, height=200)
-            
             # Display the output
+            def post_download_process():
+                st.session_state.generate_clicked = False
+                USER_SESSION_ID = str(uuid4())
+                USER_ID = str(uuid4())
+                st.session_state.USER_ID = USER_ID
+                st.session_state.USER_SESSION_ID = USER_SESSION_ID
+                st.session_state.process_completed = False
+                st.session_state.log_text = ""
+                st.session_state.log_queue = queue.Queue()
+                st.session_state.thread = None
+                st.session_state.kb_urls = []
+
             try:
                 with open(f"temp/{USER_ID}/{USER_SESSION_ID}/out.json", "r") as f:
                     out = json.load(f)
-                    st.download_button(label="Download AI ready data", data=json.dumps(out), file_name="out.json", mime="application/json")
+                    st.download_button(label="Download AI ready data", data=json.dumps(out), file_name="out.json", mime="application/json", on_click=post_download_process)
+
+                
+            
             except FileNotFoundError:
                 st.error("Output file not found. There might have been an error in processing.")
                 
             # Reset the session state variables
             st.session_state.process_completed = True
+            
+
     else:
         # Ensure placeholders are empty when not processing
         progress_placeholder.empty()
