@@ -66,7 +66,7 @@ def flatten_json_from_args(args):
         # Perform flattening
         flattened_result = flatten_json(data_json, action_json)
 
-        #print(flattened_result)
+        print(flattened_result)
         
         # Save the result
         save_json(flattened_result, args['output'])

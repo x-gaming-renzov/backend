@@ -4,7 +4,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 import os, dotenv, pathlib
 from termcolor import colored
 
-from src.flat.main import main as flat_main
+from src.flat.main import flatten_json_leaving_lists
 
 
 dotenv.load_dotenv()
@@ -31,10 +31,16 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER):
     pathlib.Path(temp_dir_path).mkdir(parents=True, exist_ok=True)
     pathlib.Path(temp_dir_path + f"""/{graph_input["file_name"]}""").touch()
 
-    flat_main(temp_dir_path, FILE_NAME, f"{FILE_NAME.split('.')[0]}_flattened.json")
-    print("Flat processing done")
+    with open(f"""{temp_dir_path}/{graph_input["file_name"]}""", "r") as f:
+        json_data_to_flat = json.load(f)
+    flat_data = flatten_json_leaving_lists(json_data_to_flat)
     graph_input["file_name"] = f"{FILE_NAME.split('.')[0]}_flattened.json"
-    upload_input_files("original.json", "application/json", USER_ID, USER_SESSION_ID)
+    with open(f"""{temp_dir_path}/{graph_input['file_name']}""", "w") as f:
+        json.dump(flat_data, f)
+
+    print("Flat processing done")
+    
+    #upload_input_files("original.json", "application/json", USER_ID, USER_SESSION_ID)
     upload_input_files(graph_input["file_name"], "application/json", USER_ID, USER_SESSION_ID)
     print("Files uploaded")
 

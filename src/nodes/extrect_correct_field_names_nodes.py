@@ -15,11 +15,13 @@ from ..utils.large_files_ops import return_prompt_adjusted_values
 dotenv.load_dotenv()
 
 print(colored("Initializing retriever tool...", "yellow"))
-retriever = get_retriever(os.getenv("USER_ID"), os.getenv("USER_SESSION_ID"))
+retriever = None
 print(colored("Retriever tool initialized successfully", "green"))
 
-def get_retriver_tool():
-    
+def get_retriver_tool(user_id, user_session_id, data_info_from_user):
+    print(colored("Initializing retriever tool...", "yellow"))
+    retriever = get_retriever(user_id, user_session_id, data_info_from_user)
+    print(colored("Retriever tool initialized successfully", "green"))
     print(colored("Retriever created successfully", "green"))
     retriever_tool = create_retriever_tool(
         retriever,
@@ -29,13 +31,10 @@ def get_retriver_tool():
     print(colored("Retriever tool created successfully", "green"))
     return retriever_tool
 
-retriever_tool = get_retriver_tool()
+
 
 model = ChatOpenAI(model="gpt-4o-mini", api_key=os.getenv("OPENAI_API_KEY"), streaming=True)
 print(colored("ChatOpenAI model initialized", "green"))
-
-elements_meaning_generator_model = model.bind_tools([retriever_tool])
-elements_meaning_generator = generate_meaning_of_elements_in_data_prompt | elements_meaning_generator_model
 
 small_model = ChatOpenAI(model="gpt-4o-mini", api_key=os.getenv("OPENAI_API_KEY"), streaming=True)
 print(colored("ChatOpenAI small model initialized", "green"))
@@ -65,6 +64,12 @@ def get_first_few_elements(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNa
         return None
 
 def get_element_meaning(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNamesStates) -> ExtractCorrectFieldNamesStates:
+    retriever_tool = get_retriver_tool(ExtractCorrectFieldNamesStates.user_id, ExtractCorrectFieldNamesStates.user_session_id, ExtractCorrectFieldNamesStates.data_info_from_user)
+    
+    elements_meaning_generator_model = model.bind_tools([retriever_tool])
+    elements_meaning_generator = generate_meaning_of_elements_in_data_prompt | elements_meaning_generator_model
+
+    
     print(colored("Generating meaning of elements in data...", "yellow"))
     elements_meaning_generator_result = elements_meaning_generator.invoke(
         {
@@ -174,7 +179,7 @@ def preprocess_field_info(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNam
 
 def retrive_node(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNamesStates) -> ExtractCorrectFieldNamesStates:
     print(colored("Retrieving node information...", "yellow"))
-    tool = retriever
+    tool = get_retriever(ExtractCorrectFieldNamesStates.user_id, ExtractCorrectFieldNamesStates.user_session_id, ExtractCorrectFieldNamesStates.data_info_from_user)
     last_message = ExtractCorrectFieldNamesStates.messages[-1]
     print(colored(f"Last message: {last_message.tool_calls[0]}", "blue"))
     questions = last_message.tool_calls[0]['args']['query']
@@ -182,7 +187,7 @@ def retrive_node(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNamesStates)
     if type(questions) == str:
         questions = [questions]
     for i in range(len(questions)):
-        answers.append(tool.invoke(questions[i]))
+        answers.append(tool.invoke(questions[i], kwargs={"k": 1}))
     tool_message = ToolMessage(content=str(answers), tool_call_id=last_message.tool_calls[0]['id'])
     print(colored(f"Node information retrieved: {answers}", "green"))
     ExtractCorrectFieldNamesStates.messages.append(tool_message)
@@ -196,7 +201,7 @@ def generate_field_name_description(ExtractCorrectFieldNamesStates: ExtractCorre
 
     for field_info in field_info_list:
         print(colored(f"Generating description for field: {field_info.field_name}", "blue"))
-        dump = retriever.invoke(f"dump {field_info.field_name}")
+        dump = get_retriever(ExtractCorrectFieldNamesStates.user_id, ExtractCorrectFieldNamesStates.user_session_id, ExtractCorrectFieldNamesStates.data_info_from_user).invoke(f"dump {field_info.field_name}", kwargs={"k": 1})
         field_definition_generator_result = field_definition_generator.invoke(
             {
                 "dump": dump,
@@ -263,7 +268,7 @@ def regenerate_field_name(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNam
     for field_info in field_info_list:
         if field_info.field_name in fields_to_regenerate:
             
-            dump = retriever.invoke(f"dump {field_info.field_name}")
+            dump = get_retriever(ExtractCorrectFieldNamesStates.user_id, ExtractCorrectFieldNamesStates.user_session_id, ExtractCorrectFieldNamesStates.data_info_from_user).invoke(f"dump {field_info.field_name}", kwargs={"k": 1})
             field_definition_generator_result = field_name_regenerator.invoke(
                 {
                     "dump": dump,

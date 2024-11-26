@@ -92,7 +92,9 @@ def main_app():
             st.session_state.generate_clicked = True
             print("Generate button clicked")
             #TODO : flat processing ()
-            
+            with open(f"temp/{USER_ID}/{USER_SESSION_ID}/kb_urls.json", "w") as f:
+                kb_urls_dict = {"urls": kb_urls}
+                json.dump(kb_urls_dict, f)
             # Start the thread
             args = (st.session_state.log_queue, USER_ID, USER_SESSION_ID, uploaded_file_data.name, DATA_INFO_FROM_USER)
             st.session_state.thread = threading.Thread(target=run_main_run_graph, args=args)
