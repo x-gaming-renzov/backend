@@ -22,4 +22,3 @@ gcloud
 setuptools
 streamlit
 ansi2html
-pysqlite
