@@ -4,7 +4,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 import os, dotenv, pathlib
 from termcolor import colored
 
-from src.flat.flat.main import main as flat_main
+from src.flat.main import main as flat_main
 
 
 dotenv.load_dotenv()

@@ -1,0 +1,74 @@
+{
+    "events": [
+      {
+        "event_id": "event_001",
+        "event_type": "player_join",
+        "player_id": "player_12345",
+        "timestamp": "2024-11-21T10:00:00Z",
+        "location": { "x": 100, "y": 64, "z": -300 },
+        "details": { "message": "Player joined the game" }
+      },
+      {
+        "event_id": "event_002",
+        "event_type": "block_break",
+        "player_id": "player_12345",
+        "timestamp": "2024-11-21T10:05:00Z",
+        "location": { "x": 105, "y": 65, "z": -310 },
+        "details": {
+          "block_type": "stone",
+          "tool_used": "diamond_pickaxe",
+          "dropped_items": ["cobblestone"]
+        }
+      }
+    ],
+    "chat_logs": [
+      {
+        "event_id": "event_003",
+        "player_id": "player_67890",
+        "timestamp": "2024-11-21T10:10:00Z",
+        "message": "Anyone up for a raid?",
+        "chat_channel": "global"
+      }
+    ],
+    "combat": {
+      "deaths": [
+        {
+          "event_id": "event_004",
+          "player_id": "player_12345",
+          "timestamp": "2024-11-21T10:15:00Z",
+          "location": { "x": 120, "y": 63, "z": -320 },
+          "details": {
+            "cause": "fall_damage",
+            "killer": null,
+            "items_dropped": ["diamond_pickaxe", "iron_helmet"]
+          }
+        }
+      ],
+      "mob_kills": [
+        {
+          "event_id": "event_005",
+          "player_id": "player_67890",
+          "timestamp": "2024-11-21T10:20:00Z",
+          "location": { "x": 150, "y": 70, "z": -200 },
+          "details": {
+            "mob_type": "zombie",
+            "tool_used": "iron_sword",
+            "dropped_items": ["rotten_flesh", "iron_ingot"]
+          }
+        }
+      ]
+    },
+    "crafting_events": [
+      {
+        "event_id": "event_006",
+        "player_id": "player_12345",
+        "timestamp": "2024-11-21T10:25:00Z",
+        "location": { "x": 100, "y": 64, "z": -300 },
+        "details": {
+          "crafted_item": "golden_apple",
+          "ingredients_used": ["gold_ingot", "apple"]
+        }
+      }
+    ]
+  }
+  

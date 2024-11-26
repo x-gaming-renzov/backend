@@ -1,0 +1,53 @@
+{
+    "events_log": {
+      "game_events": {
+        "player_12345": {
+          "join_event": {
+            "timestamp": "2024-11-21T10:00:00Z",
+            "location": { "x": 100, "y": 64, "z": -300 },
+            "details": "Player joined the game"
+          },
+          "actions": [
+            {
+              "action": "block_break",
+              "timestamp": "2024-11-21T10:05:00Z",
+              "location": { "x": 105, "y": 65, "z": -310 },
+              "block": { "type": "stone", "tool": "diamond_pickaxe", "drops": ["cobblestone"] }
+            },
+            {
+              "action": "player_death",
+              "timestamp": "2024-11-21T10:15:00Z",
+              "location": { "x": 120, "y": 63, "z": -320 },
+              "reason": "fall_damage",
+              "drops": ["diamond_pickaxe", "iron_helmet"]
+            },
+            {
+              "action": "item_craft",
+              "timestamp": "2024-11-21T10:25:00Z",
+              "location": { "x": 100, "y": 64, "z": -300 },
+              "crafted_item": "golden_apple",
+              "materials": ["gold_ingot", "apple"]
+            }
+          ]
+        },
+        "player_67890": {
+          "chat_event": {
+            "timestamp": "2024-11-21T10:10:00Z",
+            "message": "Anyone up for a raid?",
+            "channel": "global"
+          },
+          "actions": [
+            {
+              "action": "mob_kill",
+              "timestamp": "2024-11-21T10:20:00Z",
+              "location": { "x": 150, "y": 70, "z": -200 },
+              "mob": "zombie",
+              "tool": "iron_sword",
+              "loot": ["rotten_flesh", "iron_ingot"]
+            }
+          ]
+        }
+      }
+    }
+  }
+  

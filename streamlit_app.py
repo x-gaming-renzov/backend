@@ -7,7 +7,6 @@ import json
 import pathlib
 import main
 from uuid import uuid4
-import src.flat.flat.main as flat_main
 
 class QueueStream:
     def __init__(self, queue):

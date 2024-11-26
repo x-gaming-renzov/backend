@@ -1,0 +1,56 @@
+{
+    "2024-11-21T10:00:00Z": {
+      "type": "player_join",
+      "player": "player_12345",
+      "location": { "x": 100, "y": 64, "z": -300 },
+      "details": { "message": "Player joined the game" }
+    },
+    "2024-11-21T10:05:00Z": {
+      "type": "block_break",
+      "player": "player_12345",
+      "location": { "x": 105, "y": 65, "z": -310 },
+      "details": {
+        "block_type": "stone",
+        "tool_used": "diamond_pickaxe",
+        "dropped_items": ["cobblestone"]
+      }
+    },
+    "2024-11-21T10:10:00Z": {
+      "type": "chat_message",
+      "player": "player_67890",
+      "details": {
+        "message": "Anyone up for a raid?",
+        "chat_channel": "global"
+      }
+    },
+    "2024-11-21T10:15:00Z": {
+      "type": "player_death",
+      "player": "player_12345",
+      "location": { "x": 120, "y": 63, "z": -320 },
+      "details": {
+        "cause": "fall_damage",
+        "killer": null,
+        "items_dropped": ["diamond_pickaxe", "iron_helmet"]
+      }
+    },
+    "2024-11-21T10:20:00Z": {
+      "type": "mob_kill",
+      "player": "player_67890",
+      "location": { "x": 150, "y": 70, "z": -200 },
+      "details": {
+        "mob_type": "zombie",
+        "tool_used": "iron_sword",
+        "dropped_items": ["rotten_flesh", "iron_ingot"]
+      }
+    },
+    "2024-11-21T10:25:00Z": {
+      "type": "item_craft",
+      "player": "player_12345",
+      "location": { "x": 100, "y": 64, "z": -300 },
+      "details": {
+        "crafted_item": "golden_apple",
+        "ingredients_used": ["gold_ingot", "apple"]
+      }
+    }
+  }
+  

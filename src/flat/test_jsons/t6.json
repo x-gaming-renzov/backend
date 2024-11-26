@@ -1,0 +1,11 @@
+{
+    "events": [
+      { "id": "event_001", "type": "player_join", "player": "player_12345", "time": "2024-11-21T10:00:00Z", "loc": { "x": 100, "y": 64, "z": -300 }, "msg": "Player joined the game" },
+      { "id": "event_002", "type": "block_break", "player": "player_12345", "time": "2024-11-21T10:05:00Z", "loc": { "x": 105, "y": 65, "z": -310 }, "block": "stone", "tool": "diamond_pickaxe", "drops": ["cobblestone"] },
+      { "id": "event_003", "type": "chat_message", "player": "player_67890", "time": "2024-11-21T10:10:00Z", "msg": "Anyone up for a raid?", "channel": "global" },
+      { "id": "event_004", "type": "player_death", "player": "player_12345", "time": "2024-11-21T10:15:00Z", "loc": { "x": 120, "y": 63, "z": -320 }, "cause": "fall_damage", "items": ["diamond_pickaxe", "iron_helmet"] },
+      { "id": "event_005", "type": "mob_kill", "player": "player_67890", "time": "2024-11-21T10:20:00Z", "loc": { "x": 150, "y": 70, "z": -200 }, "mob": "zombie", "tool": "iron_sword", "drops": ["rotten_flesh", "iron_ingot"] },
+      { "id": "event_006", "type": "item_craft", "player": "player_12345", "time": "2024-11-21T10:25:00Z", "loc": { "x": 100, "y": 64, "z": -300 }, "item": "golden_apple", "ingredients": ["gold_ingot", "apple"] }
+    ]
+  }
+  
