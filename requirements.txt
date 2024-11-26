@@ -22,3 +22,4 @@ gcloud
 setuptools
 streamlit
 ansi2html
+sqlite3 >= 3.35.0
