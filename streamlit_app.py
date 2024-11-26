@@ -82,13 +82,15 @@ def main_app():
         pathlib.Path(f"temp/{USER_ID}/{USER_SESSION_ID}").mkdir(parents=True, exist_ok=True)
         with open(f"temp/{USER_ID}/{USER_SESSION_ID}/{uploaded_file_data.name}", "wb") as f:
             f.write(uploaded_file_data.getvalue())
-
+#data.json -> orignal_data.json
+#data.json
     # Add generate button
     generate = st.button("Generate")
     if generate and not st.session_state.generate_clicked:
         if uploaded_file_data is not None:
             st.session_state.generate_clicked = True
             print("Generate button clicked")
+            #TODO : flat processing ()
             main.upload_input_files(uploaded_file_data.name, uploaded_file_data.type, USER_ID, USER_SESSION_ID)
             print("Files uploaded")
             
