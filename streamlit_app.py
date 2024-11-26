@@ -7,6 +7,7 @@ import json
 import pathlib
 import main
 from uuid import uuid4
+import src.flat.flat.main as flat_main
 
 class QueueStream:
     def __init__(self, queue):
@@ -91,6 +92,9 @@ def main_app():
             st.session_state.generate_clicked = True
             print("Generate button clicked")
             #TODO : flat processing ()
+            flat_main.main(f"temp/{USER_ID}/{USER_SESSION_ID}", uploaded_file_data.name)
+
+            main.upload_input_files("original.json", uploaded_file_data.type, USER_ID, USER_SESSION_ID)
             main.upload_input_files(uploaded_file_data.name, uploaded_file_data.type, USER_ID, USER_SESSION_ID)
             print("Files uploaded")
             
@@ -122,7 +126,7 @@ def main_app():
             
             # Display logs inside the expander
             with log_expander_placeholder.expander("Show logs", expanded=False):
-                st.text_area("Logs", st.session_state.log_text, height=200)
+                st.text_area("Logs", st.session_state.log_text, height=500)
             
             time.sleep(0.5)
             st.rerun()
