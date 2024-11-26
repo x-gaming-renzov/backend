@@ -24,6 +24,7 @@ def run_main_run_graph(log_queue, USER_ID, USER_SESSION_ID, file_name, DATA_INFO
     sys.stdout = QueueStream(log_queue)
     
     try:
+
         main.run_graph(USER_ID, USER_SESSION_ID, file_name, DATA_INFO_FROM_USER)
     finally:
         # Restore stdout
@@ -92,11 +93,6 @@ def main_app():
             st.session_state.generate_clicked = True
             print("Generate button clicked")
             #TODO : flat processing ()
-            flat_main.main(f"temp/{USER_ID}/{USER_SESSION_ID}", uploaded_file_data.name)
-
-            main.upload_input_files("original.json", uploaded_file_data.type, USER_ID, USER_SESSION_ID)
-            main.upload_input_files(uploaded_file_data.name, uploaded_file_data.type, USER_ID, USER_SESSION_ID)
-            print("Files uploaded")
             
             # Start the thread
             args = (st.session_state.log_queue, USER_ID, USER_SESSION_ID, uploaded_file_data.name, DATA_INFO_FROM_USER)

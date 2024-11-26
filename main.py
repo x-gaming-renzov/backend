@@ -4,6 +4,9 @@ from oauth2client.service_account import ServiceAccountCredentials
 import os, dotenv, pathlib
 from termcolor import colored
 
+from src.flat.flat.main import main as flat_main
+
+
 dotenv.load_dotenv()
 
 credentials = ServiceAccountCredentials.from_json_keyfile_name("gcreds.json")
@@ -13,6 +16,7 @@ bucket = client.get_bucket("xg_live_ops")
 dotenv.load_dotenv()
 
 def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER):
+
     graph_input = {
         "user_id": USER_ID,
         "user_session_id": USER_SESSION_ID,
@@ -26,6 +30,13 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER):
     print(colored(f"Checking/creating directory: {temp_dir_path}", "blue"))
     pathlib.Path(temp_dir_path).mkdir(parents=True, exist_ok=True)
     pathlib.Path(temp_dir_path + f"""/{graph_input["file_name"]}""").touch()
+
+    flat_main(temp_dir_path, FILE_NAME, f"{FILE_NAME.split('.')[0]}_flattened.json")
+    print("Flat processing done")
+    graph_input["file_name"] = f"{FILE_NAME.split('.')[0]}_flattened.json"
+    upload_input_files("original.json", "application/json", USER_ID, USER_SESSION_ID)
+    upload_input_files(graph_input["file_name"], "application/json", USER_ID, USER_SESSION_ID)
+    print("Files uploaded")
 
     data_blob = bucket.blob(f"""{graph_input["user_id"]}/{graph_input["user_session_id"]}/{graph_input["file_name"]}""")
     data_blob.download_to_filename(f"""temp/{graph_input["user_id"]}/{graph_input["user_session_id"]}/{graph_input["file_name"]}""")
