@@ -6,6 +6,10 @@ from termcolor import colored
 
 from src.flat.main import flatten_json_leaving_lists
 
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 
 dotenv.load_dotenv()
 
