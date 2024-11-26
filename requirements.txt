@@ -23,3 +23,5 @@ setuptools
 streamlit
 ansi2html
 pysqlite3-binary
+httplib2==0.15.0
+google-api-python-client==1.6
