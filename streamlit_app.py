@@ -30,7 +30,7 @@ def run_main_run_graph(log_queue, USER_ID, USER_SESSION_ID, file_name, DATA_INFO
         sys.stdout = original_stdout
 
 def main_app():
-    st.title('DalAi LLama*🦙')
+    st.title('DalAi: Make your data LLM ready')
 
     st.write('Make your data AI-ready. Works with all LLMs')
     with st.expander("About our product", expanded=False):
