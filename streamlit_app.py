@@ -91,16 +91,16 @@ def main_app():
     
     with st.expander("Advanced options", expanded=False):
         # Text input
-        DATA_INFO_FROM_USER = st.text_input("What is this data about? (Optional)")
-
-        uploaded_file_data_kb_data = st.file_uploader("Choose a file to server knowledge base (Optional)", key='uploaded_file_data_kb_data', on_change=on_uploaded_file_data_kb_data_change)
+        st.write("#### What is this data about?")
+        DATA_INFO_FROM_USER = st.text_input("Add description (Optional)")
+        st.write("#### Do you want to tell us more about your data?")
+        uploaded_file_data_kb_data = st.file_uploader("Upload a document about data (Optional)", key='uploaded_file_data_kb_data', on_change=on_uploaded_file_data_kb_data_change)
+        st.write("#### Do you have any url reference to share?")
         kb_urls = []
-        kb_url = st.text_input("Add Knowledge base urls (Optional)")
+        kb_url = st.text_input("Add reference urls (Optional)", key='kb_url')
         if st.button("Add"):
             kb_urls.append(kb_url)
-        # Display all the URLs in the kb_urls list
-        st.write("KB URLs")
-        st.write(kb_urls)
+            st.write("Url added ✅")
 
     
 #data.json -> orignal_data.json
