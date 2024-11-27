@@ -9,9 +9,6 @@ Previous Messages : {messages}
 
 #Task : Give a 3-4 line information about what elements in this data mean based on information provided by user.
 
-NOTE : You can also ask Retriver agent to answer some questions if you need more information.
-NOTE : If you cannot understand fields in data, you can use tool to retrieve information from database.
-
 First few elements in data are :
 {first_few_elements}
 """,

@@ -64,9 +64,9 @@ def get_first_few_elements(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNa
         return None
 
 def get_element_meaning(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNamesStates) -> ExtractCorrectFieldNamesStates:
-    retriever_tool = get_retriver_tool(ExtractCorrectFieldNamesStates.user_id, ExtractCorrectFieldNamesStates.user_session_id, ExtractCorrectFieldNamesStates.data_info_from_user)
+    #retriever_tool = get_retriver_tool(ExtractCorrectFieldNamesStates.user_id, ExtractCorrectFieldNamesStates.user_session_id, ExtractCorrectFieldNamesStates.data_info_from_user)
     
-    elements_meaning_generator_model = model.bind_tools([retriever_tool])
+    elements_meaning_generator_model = model
     elements_meaning_generator = generate_meaning_of_elements_in_data_prompt | elements_meaning_generator_model
 
     

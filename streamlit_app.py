@@ -157,7 +157,7 @@ def main_app():
             try:
                 st.write("### Successfully cleaned... ✅")
                 changed_field_names_table =main.get_changes_to_field_names(USER_ID, USER_SESSION_ID)
-                with st.expander("Changed Field Names", expanded=False):
+                with st.expander("See Changed Field Names", expanded=False):
                     st.table(changed_field_names_table)
 
                 out_data_link = main.get_download_link( USER_ID, USER_SESSION_ID, "out.json")
