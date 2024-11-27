@@ -35,10 +35,7 @@ def main_app():
     st.write('Upload your data file and we will make it AI ready for you')
     with st.expander("About our product", expanded=False):
         st.write("""
-        In today's world, data drives every decision. Companies collect data, analyze it, and make strategic decisions based on insights derived from it. 
-        With the rise of AI agents, many decisions are now automated. However, for AI agents to make accurate and effective decisions, the data must be in a format they can understand. 
-        While the content of the data remains untouched, the challenge lies in presenting it in a way that preserves its meaning and context for AI systems.
-        """)
+        In today’s world, data drives every decision. Companies rely on AI agents to analyze data and automate decisions. However, the effectiveness of these systems hinges on the quality and clarity of the data they process. Poorly structured or mislabeled data can create a “garbage context” problem for large language models (LLMs), leading to misinterpretations and flawed insights. For example, an eccentric field name like “chia” to refer to seeds or “blazed” to describe PvP players in a game can confuse LLMs, causing them to misrepresent user behaviors or intentions. This disconnect impacts downstream AI applications, from analytics to automation. We solve this problem by ensuring your data is clean, consistent, and contextualized—so your LLM applications deliver accurate, meaningful results.""")
         st.write("#### At XGaming, we empower you to transform your data into AI-ready formats effortlessly.")
         st.write("##### How do we do it?")
         st.write("""
