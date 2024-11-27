@@ -1,6 +1,7 @@
 import os, pathlib, json, dotenv
 from termcolor import colored
 from typing import Literal
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import ToolMessage
@@ -195,33 +196,49 @@ def retrive_node(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNamesStates)
 
     return ExtractCorrectFieldNamesStates
 
-def generate_field_name_description(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNamesStates) -> ExtractCorrectFieldNamesStates:
+def generate_field_name_description(ExtractCorrectFieldNamesStates):
     print(colored("Generating field description...", "yellow"))
     field_info_list = ExtractCorrectFieldNamesStates.field_info_list
 
-    for field_info in field_info_list:
+    def process_field(field_info, ExtractCorrectFieldNamesStates):
         print(colored(f"Generating description for field: {field_info.field_name}", "blue"))
-        dump = get_retriever(ExtractCorrectFieldNamesStates.user_id, ExtractCorrectFieldNamesStates.user_session_id, ExtractCorrectFieldNamesStates.data_info_from_user).invoke(f"dump {field_info.field_name}", kwargs={"k": 1})
-        field_definition_generator_result = field_definition_generator.invoke(
-            {
-                "dump": dump,
-                "data_info_from_user": ExtractCorrectFieldNamesStates.data_info_from_user,
-                "meaning_of_elements_in_data": ExtractCorrectFieldNamesStates.meaning_of_elements_in_data,
-                "field_name": field_info.field_name,
-                "field_data_type": field_info.field_type,
-                "field_values": field_info.field_values,
-                "elements_where_field_is_present": field_info.elements_where_field_present
-            }
-        )
-        if isinstance(field_definition_generator_result, FieldRenameInfo):
-            field_info.field_description = field_definition_generator_result.field_description
-            field_info.field_new_name = field_definition_generator_result.field_new_name
-        else:
-            print(colored("Field description generation failed", "red"))
-            print(colored(f"Output: {field_definition_generator_result}", "red"))
-        print(colored(f"New name generated : {field_info.field_new_name}", "green"))
-        print(colored(f"Description generated : {field_info.field_description}", "green"))
-    ExtractCorrectFieldNamesStates.field_info_list = field_info_list
+        try:
+            dump = get_retriever(
+                ExtractCorrectFieldNamesStates.user_id,
+                ExtractCorrectFieldNamesStates.user_session_id,
+                ExtractCorrectFieldNamesStates.data_info_from_user
+            ).invoke(f"dump {field_info.field_name}", kwargs={"k": 1})
+            
+            field_definition_generator_result = field_definition_generator.invoke(
+                {
+                    "dump": dump,
+                    "data_info_from_user": ExtractCorrectFieldNamesStates.data_info_from_user,
+                    "meaning_of_elements_in_data": ExtractCorrectFieldNamesStates.meaning_of_elements_in_data,
+                    "field_name": field_info.field_name,
+                    "field_data_type": field_info.field_type,
+                    "field_values": field_info.field_values,
+                    "elements_where_field_is_present": field_info.elements_where_field_present
+                }
+            )
+            
+            if isinstance(field_definition_generator_result, FieldRenameInfo):
+                field_info.field_description = field_definition_generator_result.field_description
+                field_info.field_new_name = field_definition_generator_result.field_new_name
+                print(colored(f"New name generated : {field_info.field_new_name}", "green"))
+                print(colored(f"Description generated : {field_info.field_description}", "green"))
+            else:
+                print(colored("Field description generation failed", "red"))
+                print(colored(f"Output: {field_definition_generator_result}", "red"))
+        except Exception as e:
+            print(colored(f"Error processing field {field_info.field_name}: {e}", "red"))
+        return field_info
+
+    # Use ThreadPoolExecutor to process fields in parallel
+    with ThreadPoolExecutor() as executor:
+        future_to_field = {executor.submit(process_field, field, ExtractCorrectFieldNamesStates): field for field in field_info_list}
+        updated_field_info_list = [future.result() for future in as_completed(future_to_field)]
+    
+    ExtractCorrectFieldNamesStates.field_info_list = updated_field_info_list
     return ExtractCorrectFieldNamesStates
 
 def save_field_info(ExtractCorrectFieldNamesStates : ExtractCorrectFieldNamesStates) -> ExtractCorrectFieldNamesStates:
