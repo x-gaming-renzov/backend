@@ -30,9 +30,9 @@ def run_main_run_graph(log_queue, USER_ID, USER_SESSION_ID, file_name, DATA_INFO
         sys.stdout = original_stdout
 
 def main_app():
-    st.title('Make your data AI ready')
+    st.title('DalAi LLama*🦙')
 
-    st.write('Upload your data file and we will make it AI ready for you')
+    st.write('Make your data AI-ready. Works with all LLMs')
     with st.expander("About our product", expanded=False):
         st.write("""
         In today’s world, data drives every decision. Companies rely on AI agents to analyze data and automate decisions. However, the effectiveness of these systems hinges on the quality and clarity of the data they process. Poorly structured or mislabeled data can create a “garbage context” problem for large language models (LLMs), leading to misinterpretations and flawed insights. For example, an eccentric field name like “chia” to refer to seeds or “blazed” to describe PvP players in a game can confuse LLMs, causing them to misrepresent user behaviors or intentions. This disconnect impacts downstream AI applications, from analytics to automation. We solve this problem by ensuring your data is clean, consistent, and contextualized—so your LLM applications deliver accurate, meaningful results.""")
