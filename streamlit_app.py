@@ -74,7 +74,7 @@ def main_app():
     # Text input
     DATA_INFO_FROM_USER = st.text_input("What is this data about?")
 
-    uploaded_file_data = st.file_uploader("Choose a file", key='uploaded_file_data', on_change=on_uploaded_file_data_change)
+    uploaded_file_data = st.file_uploader("Choose a file", key='uploaded_file_data', on_change=on_uploaded_file_data_change, help="Upload the data file you want to make AI ready. Do not that the file should be in JSONArray format. Greater the size longer it will take to process.")
     uploaded_file_data_kb_data = st.file_uploader("Choose a file", key='uploaded_file_data_kb_data', on_change=on_uploaded_file_data_kb_data_change)
 
     kb_urls = []
@@ -158,11 +158,12 @@ def main_app():
                 st.session_state.kb_urls = []
 
             try:
-                with open(f"temp/{USER_ID}/{USER_SESSION_ID}/out.json", "r") as f:
-                    out = json.load(f)
-                    st.download_button(label="Download AI ready data", data=json.dumps(out), file_name="out.json", mime="application/json", on_click=post_download_process)
+                changed_field_names_table =main.get_changes_to_field_names(USER_ID, USER_SESSION_ID)
+                with st.expander("Changed Field Names", expanded=False):
+                    st.table(changed_field_names_table)
 
-                
+                out_data_link = main.get_download_link( USER_ID, USER_SESSION_ID, "out.json")
+                st.link_button("Download AI ready data", out_data_link)
             
             except FileNotFoundError:
                 st.error("Output file not found. There might have been an error in processing.")
