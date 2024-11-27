@@ -35,7 +35,6 @@ bucket = client.get_bucket("xg_live_ops")
 dotenv.load_dotenv()
 
 def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER):
-
     graph_input = {
         "user_id": USER_ID,
         "user_session_id": USER_SESSION_ID,
@@ -63,7 +62,7 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER):
 
     graph = src.graph.get_feild_name_correcting_task_graph()
 
-    out = graph.invoke(graph_input)
+    out = graph.invoke(graph_input, {"recursion_limit": 100})
 
     data_info = {
         "meaning_of_elements_in_data": str(out["meaning_of_elements_in_data"])

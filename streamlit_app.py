@@ -71,22 +71,19 @@ def main_app():
         with open(f"temp/{USER_ID}/{USER_SESSION_ID}/{st.session_state.uploaded_file_data.name}", "wb") as f:
             f.write(st.session_state.uploaded_file_data.getvalue())
 
-    # Text input
-    DATA_INFO_FROM_USER = st.text_input("What is this data about?")
+    uploaded_file_data = st.file_uploader("Choose a file to clean", key='uploaded_file_data', on_change=on_uploaded_file_data_change, help="Upload the data file you want to make AI ready. Do not that the file should be in JSONArray format. Greater the size longer it will take to process.")
+    with st.expander("Advanced options", expanded=False):
+        # Text input
+        DATA_INFO_FROM_USER = st.text_input("What is this data about? (Optional)")
 
-    uploaded_file_data = st.file_uploader("Choose a file", key='uploaded_file_data', on_change=on_uploaded_file_data_change, help="Upload the data file you want to make AI ready. Do not that the file should be in JSONArray format. Greater the size longer it will take to process.")
-    uploaded_file_data_kb_data = st.file_uploader("Choose a file", key='uploaded_file_data_kb_data', on_change=on_uploaded_file_data_kb_data_change)
-
-    kb_urls = []
-
-    # Text input with add button
-    kb_url = st.text_input("Add KB URL")
-    if st.button("Add"):
-        kb_urls.append(kb_url)
-
-    # Display all the URLs in the kb_urls list
-    st.write("KB URLs")
-    st.write(kb_urls)
+        uploaded_file_data_kb_data = st.file_uploader("Choose a file to server knowledge base (Optional)", key='uploaded_file_data_kb_data', on_change=on_uploaded_file_data_kb_data_change)
+        kb_urls = []
+        kb_url = st.text_input("Add Knowledge base urls (Optional)")
+        if st.button("Add"):
+            kb_urls.append(kb_url)
+        # Display all the URLs in the kb_urls list
+        st.write("KB URLs")
+        st.write(kb_urls)
 
     
 #data.json -> orignal_data.json
@@ -158,6 +155,7 @@ def main_app():
                 st.session_state.kb_urls = []
 
             try:
+                st.write("### Successfully cleaned... ✅")
                 changed_field_names_table =main.get_changes_to_field_names(USER_ID, USER_SESSION_ID)
                 with st.expander("Changed Field Names", expanded=False):
                     st.table(changed_field_names_table)
