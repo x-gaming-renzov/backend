@@ -77,10 +77,8 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER):
     print("Graph run done")
 
     upload_input_files("out.json", "application/json", USER_ID, USER_SESSION_ID)
-    # Run upload_all_files and cleanup in background
-    with ThreadPoolExecutor() as executor:
-        executor.submit(upload_all_files_async, USER_ID, USER_SESSION_ID)
-        #executor.submit(cleanup_files_dir_async, USER_ID, USER_SESSION_ID)
+
+    #TODO : upload all files using script
 
 
 def upload_input_files(file_name, file_type, USER_ID, USER_SESSION_ID):
