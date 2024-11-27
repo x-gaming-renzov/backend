@@ -33,6 +33,23 @@ def main_app():
     st.title('Make your data AI ready')
 
     st.write('Upload your data file and we will make it AI ready for you')
+    with st.expander("About our product", expanded=False):
+        st.write("""
+        In today's world, data drives every decision. Companies collect data, analyze it, and make strategic decisions based on insights derived from it. 
+        With the rise of AI agents, many decisions are now automated. However, for AI agents to make accurate and effective decisions, the data must be in a format they can understand. 
+        While the content of the data remains untouched, the challenge lies in presenting it in a way that preserves its meaning and context for AI systems.
+        """)
+        st.write("#### At XGaming, we empower you to transform your data into AI-ready formats effortlessly.")
+        st.write("##### How do we do it?")
+        st.write("""
+        1. Upload your data file.
+        2. Optionally, provide a brief description of your data.
+        3. Share any additional reference knowledge to enhance understanding (optional).
+        4. Click 'Generate.'
+        5. Wait for a few minutes.
+        6. Download your AI-ready data, optimized and structured for seamless integration.
+        """)
+
 
     # Initialize session state variables
     if 'USER_ID' not in st.session_state:
@@ -70,8 +87,11 @@ def main_app():
         pathlib.Path(f"temp/{USER_ID}/{USER_SESSION_ID}").mkdir(parents=True, exist_ok=True)
         with open(f"temp/{USER_ID}/{USER_SESSION_ID}/{st.session_state.uploaded_file_data.name}", "wb") as f:
             f.write(st.session_state.uploaded_file_data.getvalue())
+        st.session_state.uploaded_file_data.truncate(10)
+        st.write(f"new size of file name : {st.session_state.uploaded_file_data.name} is {st.session_state.uploaded_file_data.size}")
 
-    uploaded_file_data = st.file_uploader("Choose a file to clean", key='uploaded_file_data', on_change=on_uploaded_file_data_change, help="Upload the data file you want to make AI ready. Do not that the file should be in JSONArray format. Greater the size longer it will take to process.")
+    uploaded_file_data = st.file_uploader("Choose a file to clean", key='uploaded_file_data', on_change=on_uploaded_file_data_change, help="Upload the data file you want to make AI ready. Do note that the file should be in JSONArray format. Greater the size longer it will take to process.")
+    
     with st.expander("Advanced options", expanded=False):
         # Text input
         DATA_INFO_FROM_USER = st.text_input("What is this data about? (Optional)")
