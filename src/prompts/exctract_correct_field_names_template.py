@@ -45,7 +45,9 @@ Aproach to solve this task :
 Rule for making new name :
 1. New name should be descriptive and should reflect meaning of field.
 2. Words in new name should be separated by underscore.
+3. be as descriptive as possible without being too long.
 4. New name must strictly based on information provided in data. DO NOT ADD ANYTHING FROM OUTSIDE. DO NOT HALLUCINATE.
+5. Give special attention to the values field can take and if field name has any number in it, try to reflect that in new name.
 
 Rules for making description :
 1. Description MUST BE IN 2 LINER. No more than 2 lines.
