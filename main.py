@@ -82,36 +82,41 @@ def run_for_deep_value(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER,
 
     data = None
     print("Graph run done")
-    print(f"Goint to upload file of: {FILE_NAME}. Parent key: {parent_key}. location: {temp_dir_path}/out.json")
-    with open(f"""{temp_dir_path}/out.json""", "r") as f:
+    print(f"Working on file named: {FILE_NAME}. Parent key: {parent_key}. location: {temp_dir_path}/out.json")
+    with open(f"{temp_dir_path}/out.json", "r") as f:
+        #wait till the file is written
         out_data = json.load(f)
-        print(f"<<<Out data elements: {out_data.keys()}>>>")
-        #traverse the data and run the graph for each value that is a list of dictionaries
+    deep_scan_results = []
+    deep_value_sessions = []
+    #traverse the data and run the graph for each value that is a list of dictionaries
+    with ThreadPoolExecutor() as executor:
         for element in out_data:
-            deep_value_sessions = []
-            with ThreadPoolExecutor() as executor:
-                for key in element:
+            #enumerate the keys and check if the value is a list of dictionaries
+            for i, key in enumerate(element):
                     if isinstance(element[key], list):   
                         if len(element[key]) >= 1 and isinstance(element[key][0], dict):
                             print(f"Key: {key}. Type: {type(element[key])}") 
                             deep_value = element[key]
                             deep_value_session_id = str(uuid.uuid4())
-                            deep_parent_key = key
+                            parent_key = key
                             deep_value_sessions.append({
                                 "deep_value_session_id": deep_value_session_id,
-                                "parent_key": parent_key
+                                "parent_key": parent_key,
+                                "element_index": i
                             })
                             
-                            print(f"Running for deep value: {deep_value_session_id}. Parent key: {deep_parent_key}")
-                            executor.submit(run_for_deep_value, USER_ID, deep_value_session_id, f"{FILE_NAME.split('.')[0]}_{deep_parent_key}.json", DATA_INFO_FROM_USER, retriever, deep_value, parent_key)
-                
-                            #wait for all deep value sessions to complete
-            executor.shutdown(wait=True)
-            for deep_value_session in deep_value_sessions:
-                with open(f"""{temp_dir_path}/out.json""", "r") as f:
-                    deep_value_out_data = json.load(f)
-                #replace the deep value with value from 
-                element[deep_value_session['parent_key']] = deep_value_out_data
+                            print(f"Running for deep value: {deep_value_session_id}. Parent key: {parent_key}")
+                            deep_scan_result = executor.submit(run_for_deep_value, USER_ID, deep_value_session_id, f"{FILE_NAME.split('.')[0]}_{parent_key}.json", DATA_INFO_FROM_USER, retriever, deep_value, parent_key)
+                            deep_scan_results.append(deep_scan_result)
+
+    while not all([deep_scan_result.done() for deep_scan_result in deep_scan_results]):
+                    pass
+    
+    for deep_value_session in deep_value_sessions:
+        with open(f"""temp/{USER_ID}/{deep_value_session['deep_value_session_id']}/out.json""", "r") as f:
+            deep_value_out_data = json.load(f)
+        #replace the deep value with value from 
+        out_data[deep_value_session['element_index']][deep_value_session['parent_key']] = deep_value_out_data
 
     with open(f"""{temp_dir_path}/out.json""", "w") as f:
         json.dump(out_data, f)
@@ -168,11 +173,17 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER, should_u
 
     with open(f"""{temp_dir_path}/out.json""", "r") as f:
         out_data = json.load(f)
-        #traverse the data and run the graph for each value that is a list of dictionaries
+
+    deep_scan_results = []
+    deep_value_sessions = []
+    #traverse the data and run the graph for each value that is a list of dictionaries
+    with ThreadPoolExecutor() as executor:
+        print(f"Size of out_data: {len(out_data)} of path: {temp_dir_path}/out.json")
         for element in out_data:
-            deep_value_sessions = []
-            with ThreadPoolExecutor() as executor:
-                for key in element:
+            print(f"Size of element: {len(element)}")
+            #enumerate the keys and check if the value is a list of dictionaries
+            for i, key in enumerate(element):
+                    print(f"Key: {key}. Type: {type(element[key])}. Index: {i}")
                     if isinstance(element[key], list):   
                         if len(element[key]) >= 1 and isinstance(element[key][0], dict):
                             print(f"Key: {key}. Type: {type(element[key])}") 
@@ -181,20 +192,22 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER, should_u
                             parent_key = key
                             deep_value_sessions.append({
                                 "deep_value_session_id": deep_value_session_id,
-                                "parent_key": parent_key
+                                "parent_key": parent_key,
+                                "element_index": i
                             })
                             
                             print(f"Running for deep value: {deep_value_session_id}. Parent key: {parent_key}")
-                            executor.submit(run_for_deep_value, USER_ID, deep_value_session_id, f"{FILE_NAME.split('.')[0]}_{parent_key}.json", DATA_INFO_FROM_USER, retriever, deep_value, parent_key)
-                
-                            #wait for all deep value sessions to complete
-            executor.shutdown(wait=True)
+                            deep_scan_result = executor.submit(run_for_deep_value, USER_ID, deep_value_session_id, f"{FILE_NAME.split('.')[0]}_{parent_key}.json", DATA_INFO_FROM_USER, retriever, deep_value, parent_key)
+                            deep_scan_results.append(deep_scan_result)
 
-            for deep_value_session in deep_value_sessions:
-                with open(f"""temp/{USER_ID}/{deep_value_session['deep_value_session_id']}/out.json""", "r") as f:
-                    deep_value_out_data = json.load(f)
-                #replace the deep value with value from 
-                element[deep_value_session['parent_key']] = deep_value_out_data
+    while not all([deep_scan_result.done() for deep_scan_result in deep_scan_results]):
+                    pass
+    
+    for deep_value_session in deep_value_sessions:
+        with open(f"""temp/{USER_ID}/{deep_value_session['deep_value_session_id']}/out.json""", "r") as f:
+            deep_value_out_data = json.load(f)
+        #replace the deep value with value from 
+        out_data[deep_value_session['element_index']][deep_value_session['parent_key']] = deep_value_out_data
 
     with open(f"""{temp_dir_path}/out.json""", "w") as f:
         json.dump(out_data, f)
