@@ -131,7 +131,11 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER, should_u
         for running_correction_on_elements_result in running_correction_on_elements_results:
 
             with open(f"""{temp_dir_path}/{running_correction_on_elements_result["sub_process_id"]}/out.json""", "r") as f:
-                out_data[running_correction_on_elements_result["element_index"]][running_correction_on_elements_result["key"]] = json.load(f)
+                corrected_deep_value = json.load(f)
+                if len(corrected_deep_value) ==1:
+                    out_data[running_correction_on_elements_result["element_index"]][running_correction_on_elements_result["key"]] = corrected_deep_value[0]
+                else:
+                    out_data[running_correction_on_elements_result["element_index"]][running_correction_on_elements_result["key"]] = corrected_deep_value
 
         with open(f"""{temp_dir_path}/out.json""", "w") as f:
             json.dump(out_data, f)

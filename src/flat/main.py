@@ -12,10 +12,11 @@ def flatten_json_leaving_lists(data, parent_key='', sep='.'):
         for k, v in data.items():
             new_key = f"{parent_key}{sep}{k}" if parent_key else k
             if isinstance(v, dict):
-                # Flatten nested dictionary
+                """# Flatten nested dictionary
                 nested_flat_list = flatten_json_leaving_lists(v, new_key, sep=sep)
                 if nested_flat_list:
-                    flat_dict.update(nested_flat_list[0])
+                    flat_dict.update(nested_flat_list[0])"""
+                flat_dict[new_key] = [v]
             elif isinstance(v, list):
                 # check is it is list of dict
                 flat_dict[new_key] = v
