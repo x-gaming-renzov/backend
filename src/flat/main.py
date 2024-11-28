@@ -17,7 +17,7 @@ def flatten_json_leaving_lists(data, parent_key='', sep='.'):
                 if nested_flat_list:
                     flat_dict.update(nested_flat_list[0])
             elif isinstance(v, list):
-                # Leave list values as is
+                # check is it is list of dict
                 flat_dict[new_key] = v
             else:
                 # Primitive value

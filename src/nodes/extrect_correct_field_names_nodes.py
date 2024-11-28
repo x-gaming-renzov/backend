@@ -10,7 +10,7 @@ from langchain.tools.retriever import create_retriever_tool
 from ..prompts.exctract_correct_field_names_template import generate_meaning_of_elements_in_data_prompt, generate_field_desc_prompt, regenerate_field_desc_prompt
 from ..states.extrect_correct_field_names_states import ExtractCorrectFieldNamesStates, FieldRenameInfo
 from ..tools.retriever_tool import get_retriever
-from ..utils.large_files_ops import return_prompt_adjusted_values
+from ..utils.large_files_ops import return_prompt_adjusted_values, num_tokens_from_string
 
 
 dotenv.load_dotenv()
@@ -54,7 +54,8 @@ def get_first_few_elements(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNa
     try:
         print(colored(f"Opening file: {ExtractCorrectFieldNamesStates.file_name}", 'blue'))
         with open(f'{temp_dir_path}/{ExtractCorrectFieldNamesStates.file_name}', 'r') as f:
-            ExtractCorrectFieldNamesStates.first_few_elements = json.load(f)[:10]
+            first_lines = f.read(1000)
+            ExtractCorrectFieldNamesStates.first_few_elements = [first_lines]
             print(colored("First few elements extracted successfully", 'green'))
             return ExtractCorrectFieldNamesStates
     except FileNotFoundError:
@@ -70,7 +71,12 @@ def get_element_meaning(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNames
     elements_meaning_generator_model = model
     elements_meaning_generator = generate_meaning_of_elements_in_data_prompt | elements_meaning_generator_model
 
-    
+    num_tokens = num_tokens_from_string(str({
+            "data_info_from_user": ExtractCorrectFieldNamesStates.data_info_from_user,
+            "first_few_elements": ExtractCorrectFieldNamesStates.first_few_elements,
+            "messages": ExtractCorrectFieldNamesStates.messages
+        }))
+    print(colored(f"Number of tokens: {num_tokens}", "yellow"))
     print(colored("Generating meaning of elements in data...", "yellow"))
     elements_meaning_generator_result = elements_meaning_generator.invoke(
         {
@@ -208,6 +214,17 @@ def generate_field_name_description(ExtractCorrectFieldNamesStates):
                 ExtractCorrectFieldNamesStates.user_session_id,
                 ExtractCorrectFieldNamesStates.data_info_from_user
             ).invoke(f"dump {field_info.field_name}", kwargs={"k": 1})
+
+            num_tokens = num_tokens_from_string(str({
+                "dump": dump,
+                "data_info_from_user": ExtractCorrectFieldNamesStates.data_info_from_user,
+                "meaning_of_elements_in_data": ExtractCorrectFieldNamesStates.meaning_of_elements_in_data,
+                "field_name": field_info.field_name,
+                "field_data_type": field_info.field_type,
+                "field_values": field_info.field_values,
+                "elements_where_field_is_present": field_info.elements_where_field_present
+            }))
+            print(colored(f"Number of tokens: {num_tokens}", "yellow"))
             
             field_definition_generator_result = field_definition_generator.invoke(
                 {
@@ -284,8 +301,19 @@ def regenerate_field_name(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNam
     
     for field_info in field_info_list:
         if field_info.field_name in fields_to_regenerate:
-            
             dump = get_retriever(ExtractCorrectFieldNamesStates.user_id, ExtractCorrectFieldNamesStates.user_session_id, ExtractCorrectFieldNamesStates.data_info_from_user).invoke(f"dump {field_info.field_name}", kwargs={"k": 1})
+            
+            num_tokens = num_tokens_from_string(str({
+                "dump": dump,
+                "data_info_from_user": ExtractCorrectFieldNamesStates.data_info_from_user,
+                "meaning_of_elements_in_data": ExtractCorrectFieldNamesStates.meaning_of_elements_in_data,
+                "field_name": field_info.field_name,
+                "field_data_type": field_info.field_type,
+                "field_values": field_info.field_values,
+                "elements_where_field_is_present": field_info.elements_where_field_present
+            }))
+            print(colored(f"Number of tokens: {num_tokens}", "yellow"))
+            
             field_definition_generator_result = field_name_regenerator.invoke(
                 {
                     "dump": dump,

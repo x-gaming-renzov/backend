@@ -1,3 +1,5 @@
+import tiktoken
+
 def return_prompt_adjusted_values(data_type:str, values:list):
     #check if field_data types can be very large ie list, str, bytes, set, tuple etc
     if data_type in ['list', 'set', 'tuple', 'dict', 'bytes', 'str', 'bytearray']:
@@ -11,3 +13,9 @@ def return_prompt_adjusted_values(data_type:str, values:list):
     else:
         field_values = values
     return field_values
+
+def num_tokens_from_string(string: str) -> int:
+    """Returns the number of tokens in a text string."""
+    encoding = tiktoken.get_encoding("cl100k_base")
+    num_tokens = len(encoding.encode(string))
+    return num_tokens
