@@ -1,4 +1,4 @@
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter, CharacterTextSplitter
 from langchain_community.document_loaders import WebBaseLoader
@@ -27,7 +27,7 @@ def get_retriever(user_id, user_session_id, data_info_from_user, model_name='tex
 
     docs = [WebBaseLoader(url).load() for url in urls]
     docs_list = [item for sublist in docs for item in sublist]
-    docs_list.extend(CharacterTextSplitter().create_documents([data_info_from_user, "not much to say", "not much to say", "not much to say"]))
+    docs_list.extend(CharacterTextSplitter().create_documents([data_info_from_user, "not much to say. use your intution", "not much to say. use your intution", "not much to say. use your intution", "not much to say. use your intution"]))
     docs_list.extend(kb_docs)
 
     text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
@@ -45,7 +45,7 @@ def get_retriever(user_id, user_session_id, data_info_from_user, model_name='tex
         )
     except:
         vectorstore = Chroma(
-            collection_name=str(uuid.uuid4().hex),
+            collection_name=str("kb_db"),
             embedding_function=OpenAIEmbeddings(model=model_name),
             persist_directory=temp_dir,
         )

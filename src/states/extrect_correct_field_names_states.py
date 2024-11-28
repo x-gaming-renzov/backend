@@ -24,3 +24,4 @@ class ExtractCorrectFieldNamesStates(BaseModel):
     first_few_elements : List[Any] = []
     field_info_list : List[FieldInfo] = []
     messages : Sequence[BaseMessage] = []
+    retriever : Any = None

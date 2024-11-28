@@ -186,7 +186,9 @@ def preprocess_field_info(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNam
 
 def retrive_node(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNamesStates) -> ExtractCorrectFieldNamesStates:
     print(colored("Retrieving node information...", "yellow"))
-    tool = get_retriever(ExtractCorrectFieldNamesStates.user_id, ExtractCorrectFieldNamesStates.user_session_id, ExtractCorrectFieldNamesStates.data_info_from_user)
+    if ExtractCorrectFieldNamesStates.retriever is None:
+        ExtractCorrectFieldNamesStates.retriever = get_retriver_tool(ExtractCorrectFieldNamesStates.user_id, ExtractCorrectFieldNamesStates.user_session_id, ExtractCorrectFieldNamesStates.data_info_from_user)
+    tool = ExtractCorrectFieldNamesStates.retriever
     last_message = ExtractCorrectFieldNamesStates.messages[-1]
     print(colored(f"Last message: {last_message.tool_calls[0]}", "blue"))
     questions = last_message.tool_calls[0]['args']['query']
@@ -209,11 +211,9 @@ def generate_field_name_description(ExtractCorrectFieldNamesStates):
     def process_field(field_info, ExtractCorrectFieldNamesStates):
         print(colored(f"Generating description for field: {field_info.field_name}", "blue"))
         try:
-            dump = get_retriever(
-                ExtractCorrectFieldNamesStates.user_id,
-                ExtractCorrectFieldNamesStates.user_session_id,
-                ExtractCorrectFieldNamesStates.data_info_from_user
-            ).invoke(f"dump {field_info.field_name}", kwargs={"k": 1})
+            if ExtractCorrectFieldNamesStates.retriever is None:
+                ExtractCorrectFieldNamesStates.retriever = get_retriver_tool(ExtractCorrectFieldNamesStates.user_id, ExtractCorrectFieldNamesStates.user_session_id, ExtractCorrectFieldNamesStates.data_info_from_user)
+            dump = ExtractCorrectFieldNamesStates.retriever.invoke(f"dump {field_info.field_name}", kwargs={"k": 1})
 
             num_tokens = num_tokens_from_string(str({
                 "dump": dump,
@@ -264,6 +264,7 @@ def save_field_info(ExtractCorrectFieldNamesStates : ExtractCorrectFieldNamesSta
 
     #save ExtractCorrectFieldNamesStates in out.json
     with open(f'{temp_dir_path}/out.json', 'w') as f:
+        ExtractCorrectFieldNamesStates.retriever = None
         json.dump(json.loads(ExtractCorrectFieldNamesStates.model_dump_json()), f, indent=4)
         print(colored("Field information saved successfully", "green"))
     return ExtractCorrectFieldNamesStates
@@ -301,8 +302,10 @@ def regenerate_field_name(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNam
     
     for field_info in field_info_list:
         if field_info.field_name in fields_to_regenerate:
-            dump = get_retriever(ExtractCorrectFieldNamesStates.user_id, ExtractCorrectFieldNamesStates.user_session_id, ExtractCorrectFieldNamesStates.data_info_from_user).invoke(f"dump {field_info.field_name}", kwargs={"k": 1})
-            
+            if ExtractCorrectFieldNamesStates.retriever is None:
+                ExtractCorrectFieldNamesStates.retriever = get_retriver_tool(ExtractCorrectFieldNamesStates.user_id, ExtractCorrectFieldNamesStates.user_session_id, ExtractCorrectFieldNamesStates.data_info_from_user)
+            dump = ExtractCorrectFieldNamesStates.retriever.invoke(f"dump {field_info.field_name}", kwargs={"k": 1})
+
             num_tokens = num_tokens_from_string(str({
                 "dump": dump,
                 "data_info_from_user": ExtractCorrectFieldNamesStates.data_info_from_user,

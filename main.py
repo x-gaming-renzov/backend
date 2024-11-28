@@ -5,6 +5,7 @@ import os, dotenv, pathlib
 from termcolor import colored
 from concurrent.futures import ThreadPoolExecutor
 from pandas import DataFrame
+from src.tools.retriever_tool import get_retriever
 
 from src.flat.main import flatten_json_leaving_lists
 
@@ -43,6 +44,10 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER):
         "message": []
     }
     print(colored(f"Graph input: {graph_input}", "blue"))
+
+    retriever = get_retriever(USER_ID, USER_SESSION_ID, DATA_INFO_FROM_USER)
+
+    graph_input["retriever"] = retriever
 
     temp_dir_path = os.getcwd() + f"""/temp/{graph_input["user_id"]}/{graph_input["user_session_id"]}"""
     print(colored(f"Checking/creating directory: {temp_dir_path}", "blue"))
