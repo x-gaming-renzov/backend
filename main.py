@@ -6,8 +6,10 @@ from termcolor import colored
 from concurrent.futures import ThreadPoolExecutor
 from pandas import DataFrame
 from src.tools.retriever_tool import get_retriever
+import uuid
 
 from src.flat.main import flatten_json_leaving_lists
+import src.graph
 
 """__import__('pysqlite3')
 import sys
@@ -35,35 +37,32 @@ bucket = client.get_bucket("xg_live_ops")
 
 dotenv.load_dotenv()
 
-def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER):
+def run_for_deep_value(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER, retriever, data, parent_key):
+
     graph_input = {
         "user_id": USER_ID,
         "user_session_id": USER_SESSION_ID,
         "file_name": FILE_NAME,
-        "data_info_from_user": DATA_INFO_FROM_USER,
-        "message": []
+        "data_info_from_user": DATA_INFO_FROM_USER + f"""This data lies as value of : {parent_key} key.""",
+        "message": [],
+        "retriever": retriever
     }
-    print(colored(f"Graph input: {graph_input}", "blue"))
 
-    retriever = get_retriever(USER_ID, USER_SESSION_ID, DATA_INFO_FROM_USER)
-
-    graph_input["retriever"] = retriever
+    print(f"Running for deep value: {USER_SESSION_ID}. Parent key: {parent_key}. Input : {graph_input}")
 
     temp_dir_path = os.getcwd() + f"""/temp/{graph_input["user_id"]}/{graph_input["user_session_id"]}"""
-    print(colored(f"Checking/creating directory: {temp_dir_path}", "blue"))
     pathlib.Path(temp_dir_path).mkdir(parents=True, exist_ok=True)
     pathlib.Path(temp_dir_path + f"""/{graph_input["file_name"]}""").touch()
 
-    with open(f"""{temp_dir_path}/{graph_input["file_name"]}""", "r") as f:
-        json_data_to_flat = json.load(f)
-    flat_data = flatten_json_leaving_lists(json_data_to_flat)
+    with open(f"""{temp_dir_path}/{graph_input["file_name"]}""", "w") as f:
+        json.dump(data, f, indent=1)
+    flat_data = flatten_json_leaving_lists(data)
     graph_input["file_name"] = f"{FILE_NAME.split('.')[0]}_flattened.json"
     with open(f"""{temp_dir_path}/{graph_input['file_name']}""", "w") as f:
         json.dump(flat_data, f)
 
     print("Flat processing done")
     #test.py
-    import src.graph
 
     graph = src.graph.get_feild_name_correcting_task_graph()
 
@@ -78,10 +77,132 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER):
 
     with open(f"""{temp_dir_path}/data_info.json""", "w") as f:
         json.dump(data_info, f)
-    
+
+    data_info = None
+
+    data = None
+    print("Graph run done")
+    print(f"Goint to upload file of: {FILE_NAME}. Parent key: {parent_key}. location: {temp_dir_path}/out.json")
+    with open(f"""{temp_dir_path}/out.json""", "r") as f:
+        out_data = json.load(f)
+        print(f"<<<Out data elements: {out_data.keys()}>>>")
+        #traverse the data and run the graph for each value that is a list of dictionaries
+        for element in out_data:
+            deep_value_sessions = []
+            with ThreadPoolExecutor() as executor:
+                for key in element:
+                    if isinstance(element[key], list):   
+                        if len(element[key]) >= 1 and isinstance(element[key][0], dict):
+                            print(f"Key: {key}. Type: {type(element[key])}") 
+                            deep_value = element[key]
+                            deep_value_session_id = str(uuid.uuid4())
+                            deep_parent_key = key
+                            deep_value_sessions.append({
+                                "deep_value_session_id": deep_value_session_id,
+                                "parent_key": parent_key
+                            })
+                            
+                            print(f"Running for deep value: {deep_value_session_id}. Parent key: {deep_parent_key}")
+                            executor.submit(run_for_deep_value, USER_ID, deep_value_session_id, f"{FILE_NAME.split('.')[0]}_{deep_parent_key}.json", DATA_INFO_FROM_USER, retriever, deep_value, parent_key)
+                
+                            #wait for all deep value sessions to complete
+            executor.shutdown(wait=True)
+            for deep_value_session in deep_value_sessions:
+                with open(f"""{temp_dir_path}/out.json""", "r") as f:
+                    deep_value_out_data = json.load(f)
+                #replace the deep value with value from 
+                element[deep_value_session['parent_key']] = deep_value_out_data
+
+    with open(f"""{temp_dir_path}/out.json""", "w") as f:
+        json.dump(out_data, f)
+
+    return 
+
+def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER, should_upload_files=True):
+    #creating input dict for graph
+    graph_input = {
+        "user_id": USER_ID,
+        "user_session_id": USER_SESSION_ID,
+        "file_name": FILE_NAME,
+        "data_info_from_user": DATA_INFO_FROM_USER,
+        "message": []
+    }
+    print(colored(f"Graph input: {graph_input}", "blue"))
+    #creating retriever (only one for whole function)
+    retriever = get_retriever(USER_ID, USER_SESSION_ID, DATA_INFO_FROM_USER)
+
+    #set it for graph input
+    graph_input["retriever"] = retriever
+
+    temp_dir_path = os.getcwd() + f"""/temp/{graph_input["user_id"]}/{graph_input["user_session_id"]}"""
+    print(colored(f"Checking/creating directory: {temp_dir_path}", "blue"))
+    pathlib.Path(temp_dir_path).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(temp_dir_path + f"""/{graph_input["file_name"]}""").touch()
+
+    with open(f"""{temp_dir_path}/{graph_input["file_name"]}""", "r") as f:
+        json_data_to_flat = json.load(f)
+    flat_data = flatten_json_leaving_lists(json_data_to_flat)
+    json_data_to_flat = None
+    graph_input["file_name"] = f"{FILE_NAME.split('.')[0]}_flattened.json"
+    with open(f"""{temp_dir_path}/{graph_input['file_name']}""", "w") as f:
+        json.dump(flat_data, f)
+
+    print("Flat processing done")
+    #test.py
+
+    graph = src.graph.get_feild_name_correcting_task_graph()
+
+    out = graph.invoke(graph_input, {"recursion_limit": 100})
+
+    data_info = {
+        "meaning_of_elements_in_data": str(out["meaning_of_elements_in_data"])
+    }
+
+    for field_info in out["field_info_list"]:
+        data_info[field_info.field_name] = json.loads(field_info.model_dump_json())
+
+    with open(f"""{temp_dir_path}/data_info.json""", "w") as f:
+        json.dump(data_info, f)
+
+    data_info = None
+
+    with open(f"""{temp_dir_path}/out.json""", "r") as f:
+        out_data = json.load(f)
+        #traverse the data and run the graph for each value that is a list of dictionaries
+        for element in out_data:
+            deep_value_sessions = []
+            with ThreadPoolExecutor() as executor:
+                for key in element:
+                    if isinstance(element[key], list):   
+                        if len(element[key]) >= 1 and isinstance(element[key][0], dict):
+                            print(f"Key: {key}. Type: {type(element[key])}") 
+                            deep_value = element[key]
+                            deep_value_session_id = str(uuid.uuid4())
+                            parent_key = key
+                            deep_value_sessions.append({
+                                "deep_value_session_id": deep_value_session_id,
+                                "parent_key": parent_key
+                            })
+                            
+                            print(f"Running for deep value: {deep_value_session_id}. Parent key: {parent_key}")
+                            executor.submit(run_for_deep_value, USER_ID, deep_value_session_id, f"{FILE_NAME.split('.')[0]}_{parent_key}.json", DATA_INFO_FROM_USER, retriever, deep_value, parent_key)
+                
+                            #wait for all deep value sessions to complete
+            executor.shutdown(wait=True)
+
+            for deep_value_session in deep_value_sessions:
+                with open(f"""temp/{USER_ID}/{deep_value_session['deep_value_session_id']}/out.json""", "r") as f:
+                    deep_value_out_data = json.load(f)
+                #replace the deep value with value from 
+                element[deep_value_session['parent_key']] = deep_value_out_data
+
+    with open(f"""{temp_dir_path}/out.json""", "w") as f:
+        json.dump(out_data, f)
+
     print("Graph run done")
 
-    upload_input_files("out.json", "application/json", USER_ID, USER_SESSION_ID)
+    if should_upload_files:
+        upload_input_files("out.json", "application/json", USER_ID, USER_SESSION_ID)
 
     #TODO : upload all files using script
 
