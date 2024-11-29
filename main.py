@@ -89,7 +89,7 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER, should_u
         out_data = json.load(f)
     with ThreadPoolExecutor() as executor:
         running_correction_on_elements_results = []
-        for i, element in enumerate(out_data):
+        """for i, element in enumerate(out_data):
             for key in element:
                 if isinstance(element[key], list):
                     if isinstance(element[key][0], dict):
@@ -98,7 +98,7 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER, should_u
 
                         #create a folder for the sub process
                         pathlib.Path(f"{temp_dir_path}/{sub_process_id}").mkdir(parents=True, exist_ok=True)
-                        with open(f"""{temp_dir_path}/{sub_process_id}/data.json""", "w") as f:
+                        with open(f"{temp_dir_path}/{sub_process_id}/data.json", "w") as f:
                             json.dump(element[key], f)
 
                         sub_process_input = {  
@@ -109,7 +109,7 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER, should_u
                             "message": []
                         }
 
-                        with open(f"""{temp_dir_path}/{sub_process_id}/input.json""", "w") as f:
+                        with open(f"{temp_dir_path}/{sub_process_id}/input.json", "w") as f:
                             json.dump(sub_process_input, f)
                         
                         sub_process_input["retriever"] = retriever
@@ -119,7 +119,49 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER, should_u
                             "future": executor.submit(run_graph, sub_process_input["user_id"], sub_process_input["user_session_id"], sub_process_input["file_name"], sub_process_input["data_info_from_user"], False),
                             "key": key,
                             "element_index": i
-                        })
+                        })"""
+        
+        for field_info_name in data_info:
+            if field_info_name == "meaning_of_elements_in_data":
+                continue
+            
+            field_info = data_info[field_info_name]
+            
+            if field_info['field_type'] == "list":
+                print(f"Running correction on {field_info['field_new_name']}")
+                field_elements_data = []
+                for i, element in enumerate(out_data):
+                    
+                    if field_info['field_new_name'] in element and element[field_info['field_new_name']] is not None and type(element[field_info['field_new_name']][0]) == dict:
+                        print(f"Running correction on {field_info['field_new_name']} in element {i}. Type: {type(element[field_info['field_new_name']][0])}")
+                        for sub_elements in element[field_info['field_new_name']]:
+                            temp_element = sub_elements
+                            temp_element['parent_index_do_not_change'] = i
+                            field_elements_data.append(temp_element)
+                if len(field_elements_data) > 0:
+                    sub_process_id = uuid.uuid4()
+                    pathlib.Path(f"{temp_dir_path}/{sub_process_id}").mkdir(parents=True, exist_ok=True)
+                    with open(f"{temp_dir_path}/{sub_process_id}/data.json", "w") as f:
+                        json.dump(field_elements_data, f)
+
+                    sub_process_input = {  
+                        "user_id": USER_ID,
+                        "user_session_id": f"{USER_SESSION_ID}/{sub_process_id}",
+                        "file_name": f"data.json",
+                        "data_info_from_user": f"{DATA_INFO_FROM_USER} for {field_info['field_name']} in key in element. This element is part of a list of dictionaries. This element represents {data_info['meaning_of_elements_in_data']}",
+                        "message": []
+                    }
+
+                    with open(f"{temp_dir_path}/{sub_process_id}/input.json", "w") as f:
+                        json.dump(sub_process_input, f)
+                    
+                    sub_process_input["retriever"] = retriever
+                    
+                    running_correction_on_elements_results.append({
+                        "sub_process_id": sub_process_id,
+                        "future": executor.submit(run_graph, sub_process_input["user_id"], sub_process_input["user_session_id"], sub_process_input["file_name"], sub_process_input["data_info_from_user"], False),
+                        "key": field_info['field_new_name']
+                    })
         out_data = None
         #wait for all sub processes to finish
         for running_correction_on_elements_result in as_completed([running_correction_on_elements_result["future"] for running_correction_on_elements_result in running_correction_on_elements_results]):
@@ -129,16 +171,25 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER, should_u
             out_data = json.load(f)
 
         for running_correction_on_elements_result in running_correction_on_elements_results:
+            with open(f"""{temp_dir_path}/{running_correction_on_elements_result["sub_process_id"]}/data_info.json""", "r") as f:
+                temp_data_info = json.load(f)
+                parent_index_new_name = temp_data_info["parent_index_do_not_change"]['field_new_name']
+                temp_data_info = None
 
             with open(f"""{temp_dir_path}/{running_correction_on_elements_result["sub_process_id"]}/out.json""", "r") as f:
                 corrected_deep_value = json.load(f)
-                if len(corrected_deep_value) ==1:
-                    out_data[running_correction_on_elements_result["element_index"]][running_correction_on_elements_result["key"]] = corrected_deep_value[0]
-                else:
-                    out_data[running_correction_on_elements_result["element_index"]][running_correction_on_elements_result["key"]] = corrected_deep_value
+                correction_mapping_for_field = {}
+                for corrected_element in corrected_deep_value:
+                    element_index = corrected_element.pop(parent_index_new_name)
+                    if str(element_index) not in correction_mapping_for_field:
+                        correction_mapping_for_field[str(element_index)] = [corrected_element]
+                    else:
+                        correction_mapping_for_field[str(element_index)].append(corrected_element)
+                for element_index in correction_mapping_for_field:
+                    out_data[int(element_index)][running_correction_on_elements_result["key"]] = correction_mapping_for_field[element_index]
 
         with open(f"""{temp_dir_path}/out.json""", "w") as f:
-            json.dump(out_data, f)
+            json.dump(out_data, f, indent=4)
 
         out_data = None
 
@@ -148,7 +199,6 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER, should_u
             upload_input_files("out.json", "application/json", USER_ID, USER_SESSION_ID)
 
     #TODO : upload all files using script
-
 
 def upload_input_files(file_name, file_type, USER_ID, USER_SESSION_ID):
     user_id = USER_ID
@@ -230,7 +280,6 @@ def get_changes_dict(path, parent_dict = None) :
             parent_dict[data_info[field_info]['field_new_name']]["old_names"].add(data_info[field_info]['field_name'])
 
     return parent_dict
-
 
 def get_changes_to_field_names(USER_ID, USER_SESSION_ID) -> DataFrame:
     changes = []
