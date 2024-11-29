@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pandas import DataFrame
 from src.tools.retriever_tool import get_retriever
 import uuid
-
+from typing import Set
 from src.flat.main import flatten_json_leaving_lists
 import src.graph
 
@@ -206,18 +206,53 @@ def get_download_link(USER_ID, USER_SESSION_ID, FILE_NAME):
     blob = bucket.blob(f"""{USER_ID}/{USER_SESSION_ID}/{FILE_NAME}""")
     return blob.public_url
 
-def get_changes_to_field_names(USER_ID, USER_SESSION_ID) -> DataFrame:
-    with open(f"""temp/{USER_ID}/{USER_SESSION_ID}/data_info.json""", "r") as f:
+def get_changes_dict(path, parent_dict = None) : 
+    #check if """temp/{USER_ID}/{USER_SESSION_ID}/data_info.json""" exists
+    if not os.path.exists(path):
+        return parent_dict
+    
+    if parent_dict is None:
+        parent_dict = {}
+
+
+    with open(path, "r") as f:
         data_info = json.load(f)
 
-    changes = []
     for field_info in data_info:
         if field_info == "meaning_of_elements_in_data":
             continue
+        if not data_info[field_info]['field_new_name'] in parent_dict:
+            parent_dict[data_info[field_info]['field_new_name']] = {
+                "description": data_info[field_info]['field_description'],
+                "old_names": set([data_info[field_info]['field_name']])
+            }
+        else:
+            parent_dict[data_info[field_info]['field_new_name']]["old_names"].add(data_info[field_info]['field_name'])
+
+    return parent_dict
+
+
+def get_changes_to_field_names(USER_ID, USER_SESSION_ID) -> DataFrame:
+    changes = []
+
+    changes_dict = get_changes_dict(os.getcwd() + f"""/temp/{USER_ID}/{USER_SESSION_ID}/data_info.json""")
+
+    #loop through all folders and subfolders 
+    for root, dirs, files in os.walk(os.getcwd() + f"""/temp/{USER_ID}/{USER_SESSION_ID}"""):
+        for file in files:
+            if file == "data_info.json":
+                temp_changes_dict = get_changes_dict(os.path.join(root, file))
+                for key in temp_changes_dict:
+                    if key in changes_dict:
+                        changes_dict[key]["old_names"].update(temp_changes_dict[key]["old_names"])
+                    else:
+                        changes_dict[key] = temp_changes_dict[key]
+    
+    for key in changes_dict:
         changes.append({
-            "field_name": data_info[field_info]['field_name'],
-            "field_name_corrected": data_info[field_info]['field_new_name'],
-            "description": data_info[field_info]['field_description']
+            "new_name": key,
+            "old_names": list(changes_dict[key]["old_names"]),
+            "description": changes_dict[key]["description"]
         })
 
     return DataFrame(changes)
