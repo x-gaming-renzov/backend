@@ -82,4 +82,6 @@ if __name__ == "__main__":
     processed_tree = process_json(json_data, output_file=args.output_file)
 
     # Print the processed tree
-    print(json.dumps(processed_tree, indent=2))
+    # logging.getLogger(json.dumps(processed_tree, indent=2))
+    logger = logging.getLogger()
+    logger.info(json.dumps(processed_tree, indent=2))

@@ -1,6 +1,7 @@
 import sys
 import json
 import argparse
+import traceback
 
 sys.path.append('..')
 
@@ -52,6 +53,16 @@ def parse_arguments_for_script():
     args = parser.parse_args()
     return vars(args)
 
+def execute(data_json,action_json):
+    """
+    Execute the JSON flattening process.
+
+    :param data_json: Input data JSON
+    :param action_json: Action configuration JSON
+    :return: Flattened JSON
+    """
+    return flatten_json(data_json, action_json)
+
 def flatten_json_from_args(args):
     """
     Takes the parsed arguments and performs the JSON flattening functionality.
@@ -65,8 +76,6 @@ def flatten_json_from_args(args):
         
         # Perform flattening
         flattened_result = flatten_json(data_json, action_json)
-
-        print(flattened_result)
         
         # Save the result
         save_json(flattened_result, args['output'])
@@ -79,7 +88,7 @@ def flatten_json_from_args(args):
             print(f"Total events processed: {len(flattened_result)}")
     
     except Exception as e:
-        print(f"An error occurred: {e}")
+        traceback.print_exc()
         exit(1)
 
 def main():

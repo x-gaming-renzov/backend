@@ -3,8 +3,8 @@ import json
 
 sys.path.append('..')
 
-from execute.util import read_json, write_json
-from execute.process import flatten_json
+from .util import read_json, write_json
+from .process import flatten_json
 
 def main():
     # Sample input data (as you provided)

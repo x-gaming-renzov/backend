@@ -38,6 +38,28 @@ def decide_and_name(json_data, keys, model=None):
     logging.warning("No keys provided for processing.")
     return []
 
+def get_pattern(json_data, keys, model=None):
+    logging.info(f"Starting get_pattern process for {keys}")
+
+    # Multi-key processing
+    if len(keys) > 1:
+        pattern = llm.find_pattern_in_keys(keys, model)
+        if pattern == "no pattern":
+            pattern = None
+        if pattern:
+            logging.info(f"Pattern found: {pattern}")
+            return pattern
+        else:
+            logging.info("No pattern found. Processing each key individually.")
+            return [process.process_single_key(json_data, key, model) for key in keys]
+
+    # Single key processing
+    elif keys:
+        return process.process_single_key(json_data, keys[0], model)
+
+    logging.warning("No keys provided for processing.")
+    return []
+
 def setup_logging():
     if logging_enabled:
         # Configure the root logger to show logs at INFO level or higher
