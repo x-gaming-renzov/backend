@@ -8,7 +8,7 @@ from pandas import DataFrame
 from src.tools.retriever_tool import get_retriever
 import uuid
 
-from src.flat.main import flatten_json_leaving_lists
+from src.flat.main import flatten_json
 import src.graph
 
 """__import__('pysqlite3')
@@ -61,7 +61,7 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER, should_u
 
     with open(f"""{temp_dir_path}/{graph_input["file_name"]}""", "r") as f:
         json_data_to_flat = json.load(f)
-    flat_data = flatten_json_leaving_lists(json_data_to_flat)
+    flat_data = flatten_json(json_data_to_flat)
     json_data_to_flat = None
     graph_input["file_name"] = f"{FILE_NAME.split('.')[0]}_flattened.json"
     with open(f"""{temp_dir_path}/{graph_input['file_name']}""", "w") as f:

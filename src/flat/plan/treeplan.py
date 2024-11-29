@@ -22,19 +22,32 @@ class TreePlan:
 
     def _build_tree(self, json_data, parent_path=''):
         """
-        Recursively build tree, keeping only dictionary values.
+        Recursively build tree, keeping only dictionary or list values.
         """
         tree = {}
-        for key, value in json_data.items():
-            if isinstance(value, dict):
-                # Create node with placeholders for action and name
-                node_path = f"{parent_path}.{key}" if parent_path else key
-                tree[key] = {
-                    'key': key,
-                    'action': None,  # To be filled later
-                    'name': None,    # To be filled later
-                    'children': self._build_tree(value, node_path)
-                }
+        if isinstance(json_data, dict):
+            for key, value in json_data.items():
+                if isinstance(value, (dict, list)):
+                    node_path = f"{parent_path}.{key}" if parent_path else key
+                    tree[key] = {
+                        'key': key,
+                        'type': 'dict' if isinstance(value, dict) else 'list',
+                        'action': None,
+                        'name': None,
+                        'children': self._build_tree(value, node_path)
+                    }
+        elif isinstance(json_data, list):
+            for index, item in enumerate(json_data):
+                if isinstance(item, (dict, list)):
+                    key = str(index)
+                    node_path = f"{parent_path}.{key}" if parent_path else key
+                    tree[key] = {
+                        'key': key,
+                        'type': 'dict' if isinstance(item, dict) else 'list',
+                        'action': None,
+                        'name': None,
+                        'children': self._build_tree(item, node_path)
+                    }
         return tree
 
     def check(self, node, parent_path=''):
@@ -75,6 +88,17 @@ class TreePlan:
             # Single common pattern for all keys
             self.logger.info(f"Generated single common regex pattern for keys: {keys}")
             self.logger.info(f"Pattern: {pattern_info}")
+
+            if len(nodes) == 1:
+                # Single node case
+                self.logger.info("Single node case")
+                return {
+                    'pattern': pattern_info['pattern'],  # Regex pattern
+                    'action': pattern_info['action'],  # Action
+                    'key_name': pattern_info['key_name'],  # Optional key name
+                    'keys': keys
+                }
+                
             return {
                 'pattern': pattern_info[0],  # Regex pattern
                 'action': pattern_info[1],  # Action
