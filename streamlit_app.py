@@ -178,7 +178,8 @@ def main_app():
 
                 out_data_link = main.get_download_link( USER_ID, USER_SESSION_ID, "out.json")
                 st.link_button("Download AI ready data", out_data_link)
-                main.upload_input_files("kb_data.txt", st.session_state.uploaded_file_data_kb_data.type, USER_ID, USER_SESSION_ID)
+                if uploaded_file_data_kb_data is not None:
+                    main.upload_input_files("kb_data.txt", st.session_state.uploaded_file_data_kb_data.type, USER_ID, USER_SESSION_ID)
 
             
             except FileNotFoundError:
