@@ -73,10 +73,9 @@ def main_app():
         # Save the uploaded file
         pathlib.Path(f"temp/{USER_ID}/{USER_SESSION_ID}").mkdir(parents=True, exist_ok=True)
         with open(f"temp/{USER_ID}/{USER_SESSION_ID}/kb_data.txt", "wb") as f:
-            f.write(st.session_state.uploaded_file_data.getvalue())
+            f.write(st.session_state.uploaded_file_data_kb_data.getvalue())
 
-        main.upload_input_files("kb_data.txt", st.session_state.uploaded_file_data_kb_data.type, USER_ID, USER_SESSION_ID)
-
+        
     def on_uploaded_file_data_change():
         if st.session_state.uploaded_file_data is None:
             return
@@ -179,6 +178,8 @@ def main_app():
 
                 out_data_link = main.get_download_link( USER_ID, USER_SESSION_ID, "out.json")
                 st.link_button("Download AI ready data", out_data_link)
+                main.upload_input_files("kb_data.txt", st.session_state.uploaded_file_data_kb_data.type, USER_ID, USER_SESSION_ID)
+
             
             except FileNotFoundError:
                 st.error("Output file not found. There might have been an error in processing.")
