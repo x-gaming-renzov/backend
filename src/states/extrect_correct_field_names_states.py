@@ -10,6 +10,8 @@ class FieldInfo(BaseModel):
     field_values : List[Any]
     elements_where_field_present : List[Any]
     field_new_name : str = None
+    semantic_score : float = None
+    semantic_score_explanation : str = None
 
 class FieldRenameInfo(BaseModel):
     field_new_name : str = Field( title="New Name of Field")
@@ -25,3 +27,11 @@ class ExtractCorrectFieldNamesStates(BaseModel):
     field_info_list : List[FieldInfo] = []
     messages : Sequence[BaseMessage] = []
     retriever : Any = None
+
+class SemanticScoreResult(BaseModel):
+    clarity_improvement_score : float
+    justification : str
+
+class SemanticRegenratedName(BaseModel):
+    field_new_name : str
+    field_description : str

@@ -121,3 +121,54 @@ Elements where field is present :
 """,
     input_variables=["dump", "data_info_from_user", "meaning_of_elements_in_data", "field_name", "field_data_type", "field_values", "elements_where_field_is_present"]
 )
+
+generate_score_for_new_fields = PromptTemplate(
+    template = """You are to assess the semantic clarity improvement of a field name in a dataset.
+Here is the knowledge base to consider:
+{dump}
+
+#About the data : 
+{data_info_from_user}
+
+#About elements in data :
+{meaning_of_elements_in_data}
+
+Field information:
+- Old field name: {field_name}
+- New field name: {field_new_name}
+- Sample values: {field_values}
+- Elements where field is present: {elements_where_field_is_present}
+
+Question:
+On a scale from -5 to +5, how much does the new field name improve semantic clarity over the old field name?
+- -5 means the new field name is much less clear than the old one
+- 0 means no change in clarity
+- +5 means the new field name is much clearer than the old one
+
+Provide your assessment in JSON format with keys:
+
+  "clarity_improvement_score": <your_score_here>,
+  "justification": "<brief explanation>"
+
+
+Provide only the JSON object as your response.""",
+    input_variables=["dump", "data_info_from_user", "meaning_of_elements_in_data", "field_name", "field_new_name", "field_values", "elements_where_field_is_present"]
+)
+
+regenerate_low_scored_names = PromptTemplate(
+    template="""The initial attempt to improve the field name '{field_name}' resulted in '{field_new_name}', which has a clarity improvement score of {semantic_score} because {assessment}.
+
+Your task is to suggest an even better field name that significantly enhances semantic clarity. Use the following information:
+
+Knowledge base:
+{dump}
+
+Field information:
+- Old field name: {field_name}
+- Previous suggested field name: {field_new_name}
+- Sample values: {field_values}
+- Elements where field is present: {elements_where_field_is_present}
+
+Provide only the JSON object as your response.""",
+    input_variables=["dump", "field_name", "field_new_name", "field_values", "elements_where_field_is_present", "semantic_score", "assessment"]
+)

@@ -5,7 +5,7 @@ import time
 import sys
 import json
 import pathlib
-import main
+import runner
 from uuid import uuid4
 
 class QueueStream:
@@ -24,7 +24,7 @@ def run_main_run_graph(log_queue, USER_ID, USER_SESSION_ID, file_name, DATA_INFO
     
     try:
 
-        main.run_graph(USER_ID, USER_SESSION_ID, file_name, DATA_INFO_FROM_USER)
+        runner.run_graph(USER_ID, USER_SESSION_ID, file_name, DATA_INFO_FROM_USER)
     finally:
         # Restore stdout
         sys.stdout = original_stdout
@@ -172,14 +172,14 @@ def main_app():
 
             try:
                 st.write("### Successfully cleaned... ✅")
-                changed_field_names_table =main.get_changes_to_field_names(USER_ID, USER_SESSION_ID)
+                changed_field_names_table =runner.get_changes_to_field_names(USER_ID, USER_SESSION_ID)
                 with st.expander("See Changed Field Names", expanded=False):
                     st.table(changed_field_names_table)
 
-                out_data_link = main.get_download_link( USER_ID, USER_SESSION_ID, "out.json")
+                out_data_link = runner.get_download_link( USER_ID, USER_SESSION_ID, "out.json")
                 st.link_button("Download AI ready data", out_data_link)
                 if uploaded_file_data_kb_data is not None:
-                    main.upload_input_files("kb_data.txt", st.session_state.uploaded_file_data_kb_data.type, USER_ID, USER_SESSION_ID)
+                    runner.upload_input_files("kb_data.txt", st.session_state.uploaded_file_data_kb_data.type, USER_ID, USER_SESSION_ID)
 
             
             except FileNotFoundError:

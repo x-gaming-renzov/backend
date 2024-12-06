@@ -7,8 +7,8 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import ToolMessage
 from langchain.tools.retriever import create_retriever_tool
 
-from ..prompts.exctract_correct_field_names_template import generate_meaning_of_elements_in_data_prompt, generate_field_desc_prompt, regenerate_field_desc_prompt
-from ..states.extrect_correct_field_names_states import ExtractCorrectFieldNamesStates, FieldRenameInfo
+from ..prompts.exctract_correct_field_names_template import generate_meaning_of_elements_in_data_prompt, generate_field_desc_prompt, regenerate_field_desc_prompt, generate_score_for_new_fields, regenerate_low_scored_names
+from ..states.extrect_correct_field_names_states import ExtractCorrectFieldNamesStates, FieldRenameInfo, SemanticScoreResult, SemanticRegenratedName, FieldInfo
 from ..tools.retriever_tool import get_retriever
 from ..utils.large_files_ops import return_prompt_adjusted_values, num_tokens_from_string
 
@@ -42,9 +42,13 @@ print(colored("ChatOpenAI small model initialized", "green"))
 
 field_definiton_generator_model = small_model
 field_definiton_generator_model = field_definiton_generator_model.with_structured_output(FieldRenameInfo)
+semantic_score_generator_model = small_model.with_structured_output(SemanticScoreResult)
+regenerate_low_semantic_scored_fields_model = small_model.with_structured_output(SemanticRegenratedName)
 
 field_definition_generator = generate_field_desc_prompt | field_definiton_generator_model
 field_name_regenerator = regenerate_field_desc_prompt | field_definiton_generator_model
+semantic_score_generator = generate_score_for_new_fields | semantic_score_generator_model
+regenerate_low_semantic_scored_fields = regenerate_low_scored_names | regenerate_low_semantic_scored_fields_model
 
 def get_first_few_elements(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNamesStates) -> ExtractCorrectFieldNamesStates:
     temp_dir_path = os.getcwd() + f'/temp/{ExtractCorrectFieldNamesStates.user_id}/{ExtractCorrectFieldNamesStates.user_session_id}'
@@ -350,6 +354,147 @@ def should_regenrate_fields(ExtractCorrectFieldNamesStates: ExtractCorrectFieldN
             return "regenerate_field_name"
     return "continue"
 
+def score_one_field(input_info : FieldInfo, ExtractCorrectFieldNamesStates : ExtractCorrectFieldNamesStates) -> FieldInfo:
+    print(colored("Generating scores for fields...", "yellow"))
+    field_info = input_info
+
+    if field_info.field_name == 'parent_index_do_not_change': 
+        field_info.semantic_score = 5
+        field_info.semantic_score_explanation = "This field is a parent index and should not be changed."
+        return field_info
+
+    if ExtractCorrectFieldNamesStates.retriever is None:
+        ExtractCorrectFieldNamesStates.retriever = get_retriver_tool(ExtractCorrectFieldNamesStates.user_id, ExtractCorrectFieldNamesStates.user_session_id, ExtractCorrectFieldNamesStates.data_info_from_user)
+    dump = ExtractCorrectFieldNamesStates.retriever.invoke(f"dump {field_info.field_name}", kwargs={"k": 1})
+
+    num_tokens = num_tokens_from_string(str({
+        "dump": dump,
+        "data_info_from_user": ExtractCorrectFieldNamesStates.data_info_from_user,
+        "meaning_of_elements_in_data": ExtractCorrectFieldNamesStates.meaning_of_elements_in_data,
+        "field_name": field_info.field_name,
+        "field_data_type": field_info.field_type,
+        "field_values": field_info.field_values,
+        "elements_where_field_is_present": field_info.elements_where_field_present
+    }))
+    print(colored(f"Number of tokens: {num_tokens}", "yellow"))
+    
+    semantic_score_generator_result = semantic_score_generator.invoke(
+        {
+            "dump": dump,
+            "data_info_from_user": ExtractCorrectFieldNamesStates.data_info_from_user,
+            "meaning_of_elements_in_data": ExtractCorrectFieldNamesStates.meaning_of_elements_in_data,
+            "field_name": field_info.field_name,
+            "field_values": field_info.field_values,
+            "elements_where_field_is_present": field_info.elements_where_field_present,
+            "field_new_name": field_info.field_new_name,
+        }
+    )
+    
+    if isinstance(semantic_score_generator_result, SemanticScoreResult):
+        field_info.semantic_score = semantic_score_generator_result.clarity_improvement_score
+        field_info.semantic_score_explanation = semantic_score_generator_result.justification
+        print(colored(f"Score generated : {field_info.semantic_score}", "green"))
+        print(colored(f"Explanation generated : {field_info.semantic_score_explanation}", "green"))
+        return field_info
+    else:
+        print(colored("Score generation failed", "red"))
+        print(colored(f"Output: {semantic_score_generator_result}", "red"))
+        return None
+
+def score_generation(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNamesStates) -> ExtractCorrectFieldNamesStates:
+    print(colored("Generating scores for fields...", "yellow"))
+    field_info_list = ExtractCorrectFieldNamesStates.field_info_list
+    update_field_info_list = []
+
+    with ThreadPoolExecutor() as executor:
+        field_processes = []
+        for field_info in field_info_list:
+            field_processes.append(executor.submit(score_one_field, field_info, ExtractCorrectFieldNamesStates))
+        
+        #wait for all processes to finish
+        for process in as_completed(field_processes):
+            result = process.result()
+            if result is not None:
+                update_field_info_list.append(result)
+
+    ExtractCorrectFieldNamesStates.field_info_list = update_field_info_list
+
+    return ExtractCorrectFieldNamesStates
+
+def regenerate_low_scored_fields(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNamesStates) -> ExtractCorrectFieldNamesStates:
+    field_info_list = ExtractCorrectFieldNamesStates.field_info_list
+    low_scored_fields = []
+    for field_info in field_info_list:
+        if field_info.semantic_score <= 3:
+            low_scored_fields.append(field_info)
+    
+    def regenerate(field_info : FieldInfo, ExtractCorrectFieldNamesStates) :
+        print(colored(f"Regenerating field: {field_info.field_name}", "blue"))
+        if ExtractCorrectFieldNamesStates.retriever is None:
+            ExtractCorrectFieldNamesStates.retriever = get_retriver_tool(ExtractCorrectFieldNamesStates.user_id, ExtractCorrectFieldNamesStates.user_session_id, ExtractCorrectFieldNamesStates.data_info_from_user)
+        dump = ExtractCorrectFieldNamesStates.retriever.invoke(f"dump {field_info.field_name}", kwargs={"k": 1})
+
+        num_tokens = num_tokens_from_string(str({
+            "dump": dump,
+            "data_info_from_user": ExtractCorrectFieldNamesStates.data_info_from_user,
+            "meaning_of_elements_in_data": ExtractCorrectFieldNamesStates.meaning_of_elements_in_data,
+            "field_name": field_info.field_name,
+            "field_data_type": field_info.field_type,
+            "field_values": field_info.field_values,
+            "elements_where_field_is_present": field_info.elements_where_field_present
+        }))
+        print(colored(f"Number of tokens: {num_tokens}", "yellow"))
+        
+        regenerate_low_semantic_scored_fields_result = regenerate_low_semantic_scored_fields.invoke(
+            {
+                "dump": dump,
+                "field_name": field_info.field_name,
+                "field_new_name": field_info.field_new_name,
+                "field_values": field_info.field_values,
+                "elements_where_field_is_present": field_info.elements_where_field_present,
+                "semantic_score": field_info.semantic_score,
+                "assessment": field_info.semantic_score_explanation
+            }
+        )
+        
+        if isinstance(regenerate_low_semantic_scored_fields_result, SemanticRegenratedName):
+            field_info.field_new_name = regenerate_low_semantic_scored_fields_result.field_new_name
+            field_info.field_description = regenerate_low_semantic_scored_fields_result.field_description
+            print(colored(f"New name generated : {field_info.field_new_name}", "green"))
+            print(colored(f"Description generated : {field_info.field_description}", "green"))
+            return field_info
+        else:
+            print(colored("Field regeneration failed", "red"))
+            print(colored(f"Output: {regenerate_low_semantic_scored_fields_result}", "red"))
+            return None 
+    def improve_score(field_info : FieldInfo, ExtractCorrectFieldNamesStates) :
+        retires = 0
+        while field_info.semantic_score <=3 and retires < 5:
+            print(colored(f"Retrying field: {field_info.field_name}. Current score :{field_info.semantic_score}", "blue"))
+
+            field_info = regenerate(field_info, ExtractCorrectFieldNamesStates)
+            field_info = score_one_field(field_info, ExtractCorrectFieldNamesStates)
+            print(colored(f"New score: {field_info.semantic_score}", "green"))
+
+            retires += 1
+        return field_info
+    
+    with ThreadPoolExecutor() as executor:
+        field_processes = []
+        for field_info in low_scored_fields:
+            field_processes.append(executor.submit(improve_score, field_info, ExtractCorrectFieldNamesStates))
+        
+        #wait for all processes to finish
+        for process in as_completed(field_processes):
+            result = process.result()
+            if result is not None:
+                for i in range(len(field_info_list)):
+                    if field_info_list[i].field_name == result.field_name:
+                        field_info_list[i] = result
+
+    ExtractCorrectFieldNamesStates.field_info_list = field_info_list
+    return ExtractCorrectFieldNamesStates
+
 def process_whole_file_in_batches(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNamesStates) -> ExtractCorrectFieldNamesStates:
     
     temp_dir_path = os.getcwd() + f'/temp/{ExtractCorrectFieldNamesStates.user_id}/{ExtractCorrectFieldNamesStates.user_session_id}'
@@ -392,7 +537,7 @@ def process_whole_file_in_batches(ExtractCorrectFieldNamesStates: ExtractCorrect
     
     return ExtractCorrectFieldNamesStates
                     
-def rejoin_batches(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNamesStates) -> ExtractCorrectFieldNamesStates:
+def rejoin_batches(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNamesStates) -> ExtractCorrectFieldNamesStates:   
     temp_dir_path = os.getcwd() + f'/temp/{ExtractCorrectFieldNamesStates.user_id}/{ExtractCorrectFieldNamesStates.user_session_id}'
     print(colored(f"Rejoining batches in: {temp_dir_path}", "blue"))
 
@@ -416,4 +561,3 @@ def rejoin_batches(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNamesState
             print(colored(f"Deleted file: {file}", "yellow"))
 
     return ExtractCorrectFieldNamesStates
-
