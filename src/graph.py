@@ -48,4 +48,9 @@ def get_feild_name_correcting_task_graph():
 
     compiled_workflow = workflow.compile()
 
+    #save the compiled workflow image 
+    img = compiled_workflow.get_graph().draw_mermaid_png()
+    with open('workflow.png', 'wb') as f:
+        f.write(img)
+
     return compiled_workflow

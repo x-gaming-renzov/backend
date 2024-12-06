@@ -117,38 +117,18 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER, should_u
     for future in as_completed(futures):
         continue
 
-    def rename_fields(data, field_maps):
-        new_data = []
-        for element in data:
-            new_element = {}
-            for key in element:
-                if key in field_maps:
-                    new_element[field_maps[key]] = element[key]
-                else:
-                    new_element[key] = element[key]
-            new_data.append(new_element)
-        return new_data
-    
-    new_out_data = []
-    for element in out_data:
-        new_element = {}
+    for element_index, element in enumerate(out_data):
         for key in element:
-            if key in nested_fields:
-                with open(f"""{temp_dir_path}/{key}/data_info.json""", "r") as f:
-                    nested_data_info = json.load(f)
-                nested_field_maps = {}
-                for field_info in nested_data_info:
-                    if field_info == "meaning_of_elements_in_data":
-                        continue
-                    nested_field_maps[field_info] = nested_data_info[field_info]["field_new_name"]
-                new_element[key] = rename_fields(element[key], nested_field_maps)
-            else:
-                new_element[key] = element[key]
-        new_out_data.append(new_element)
-    
-    out_data = new_out_data
-    new_out_data = None
-                
+            if isinstance(element[key], list) and isinstance(element[key][0], dict):
+                if key in nested_fields:
+                    nested_processed_element = []
+                    with open(f"""{nested_fields[key]}/out.json""", "r") as f:
+                        nested_out_data = json.load(f)
+                    for nested_element in nested_out_data:
+                        if "parent_index_do_not_change" in nested_element:
+                            if nested_element["parent_index_do_not_change"] == element_index:
+                                nested_processed_element.append(nested_element)
+                    out_data[element_index][key] = nested_processed_element
         
     with open(f"""{temp_dir_path}/out.json""", "w") as f:
         json.dump(out_data, f, indent=4)

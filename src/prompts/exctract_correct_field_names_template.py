@@ -156,7 +156,9 @@ Provide only the JSON object as your response.""",
 )
 
 regenerate_low_scored_names = PromptTemplate(
-    template="""The initial attempt to improve the field name '{field_name}' resulted in '{field_new_name}', which has a clarity improvement score of {semantic_score} because {assessment}.
+    template="""The initial attempt to improve the field name '{field_name}' resulted in '{field_new_name}', which has a clarity improvement score of - {semantic_score}.
+Here's the feedback provided by the user:
+{assessment}
 
 Your task is to suggest an even better field name that significantly enhances semantic clarity. Use the following information:
 
