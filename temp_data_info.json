@@ -1,0 +1,142 @@
+{
+    "d7_retained": {
+        "old_name": "d7_retained",
+        "new_name": "d7_retained_player_activity_log",
+        "score": 4.0
+    },
+    "d14_retained": {
+        "old_name": "d14_retained",
+        "new_name": "daily_retained_players",
+        "score": 4.0
+    },
+    "events": {
+        "old_name": "events",
+        "new_name": "player_event_log",
+        "score": 4.0
+    },
+    "player_id": {
+        "old_name": "player_id",
+        "new_name": "unique_player_identifier",
+        "score": 4.0
+    },
+    "mp_country_code": {
+        "old_name": "mp_country_code",
+        "new_name": "player_country_code",
+        "score": 4.0
+    },
+    "event": {
+        "old_name": "event",
+        "new_name": "event_type",
+        "score": 4.0
+    },
+    "victim_name": {
+        "old_name": "victim_name",
+        "new_name": "chat_message_sender",
+        "score": 4.0
+    },
+    "victim_type": {
+        "old_name": "victim_type",
+        "new_name": "victim_player_names",
+        "score": 4.0
+    },
+    "distinct_id": {
+        "old_name": "distinct_id",
+        "new_name": "player_unique_identifier",
+        "score": 4.0
+    },
+    "trade-suggested": {
+        "old_name": "trade-suggested",
+        "new_name": "suggested_trade_value",
+        "score": 4.0
+    },
+    "world": {
+        "old_name": "world",
+        "new_name": "virtual_game_environment",
+        "score": 4.0
+    },
+    "timestamp": {
+        "old_name": "timestamp",
+        "new_name": "event_occurred_at",
+        "score": 4.0
+    },
+    "time": {
+        "old_name": "time",
+        "new_name": "event_timestamp_int",
+        "score": 4.0
+    },
+    "server": {
+        "old_name": "server",
+        "new_name": "game_server_name",
+        "score": 4.0
+    },
+    "advancement": {
+        "old_name": "advancement",
+        "new_name": "player_advancement_id",
+        "score": 4.0
+    },
+    "username": {
+        "old_name": "username",
+        "new_name": "player_username",
+        "score": 4.0
+    },
+    "entity_type": {
+        "old_name": "entity_type",
+        "new_name": "traded_item_details",
+        "score": 4.0
+    },
+    "cause": {
+        "old_name": "cause",
+        "new_name": "block_interaction_cause",
+        "score": 4.0
+    },
+    "trade-menu": {
+        "old_name": "trade-menu",
+        "new_name": "npc_trade_suggestions",
+        "score": 4.0
+    },
+    "reason": {
+        "old_name": "reason",
+        "new_name": "interaction_purpose",
+        "score": 4.0
+    },
+    "npc-reply": {
+        "old_name": "npc-reply",
+        "new_name": "npc_trade_response_items",
+        "score": 4.0
+    },
+    "first-chat": {
+        "old_name": "first-chat",
+        "new_name": "first_chat_message",
+        "score": 4.0
+    },
+    "item": {
+        "old_name": "item",
+        "new_name": "item_id",
+        "score": 4.0
+    },
+    "item-take": {
+        "old_name": "item-take",
+        "new_name": "item_taken_details",
+        "score": 4.0
+    },
+    "item-give": {
+        "old_name": "item-give",
+        "new_name": "item_giving_transaction_details",
+        "score": 4.0
+    },
+    "block": {
+        "old_name": "block",
+        "new_name": "crafting_recipe_block",
+        "score": 4.0
+    },
+    "message": {
+        "old_name": "message",
+        "new_name": "player_interaction_message",
+        "score": 4.0
+    },
+    "entity": {
+        "old_name": "entity",
+        "new_name": "player_interaction_entity",
+        "score": 4.0
+    }
+}
