@@ -147,7 +147,7 @@ def upload_input_files(file_name, file_type, USER_ID, USER_SESSION_ID):
 
     print(colored(f"Uploading file: {file_name}", "green"))
 
-    blob = bucket.blob(f"""{user_id}/{user_session_id}/{file_name}""")
+    blob = bucket.blob(f"""{user_id}/tasks/{user_session_id}/{file_name}""")
     blob.upload_from_filename(os.getcwd() + f"""/temp/{user_id}/{user_session_id}/{file_name}""", content_type=file_type)
     blob.metadata = { "xg_live_ops" : "attachment", "content-disposition" : "attachment" }
     blob.patch()
