@@ -169,9 +169,11 @@ def check_for_user_feedback():
         blob.content_disposition = f"attachment; filename=data.json"
         blob.patch()
 
-        xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'status': 'paused'}})
-        xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'stage': 'complete'}})
-        xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'fields': fields}})
+        xg_mongo_db['tasks'].update_one(
+        {'_id': task_id},
+        {'$set': {'status': 'paused', 'stage': 'complete', 'fields': fields}}
+)
+
 
 
 if __name__ == '__main__':
