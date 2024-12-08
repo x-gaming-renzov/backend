@@ -12,20 +12,6 @@ def num_tokens_from_string(string: str) -> int:
     num_tokens = len(encoding.encode(string))
     return num_tokens
 
-def rename_field_in_json(data, old_field_name, new_field_name):
-    """
-    Recursively renames fields in a JSON structure (dict or list).
-    """
-    if isinstance(data, dict):
-        return {
-            new_field_name if k == old_field_name else k: rename_field_in_json(v, old_field_name, new_field_name)
-            for k, v in data.items()
-        }
-    elif isinstance(data, list):
-        return [rename_field_in_json(item, old_field_name, new_field_name) for item in data]
-    else:
-        return data
-
 def rename_field_single_pass(data, field_map):
     """
     Single-pass renaming using a hashmap of old -> new field names.
@@ -39,3 +25,36 @@ def rename_field_single_pass(data, field_map):
         return [rename_field_single_pass(item, field_map) for item in data]
     else:
         return data
+
+def rename_field_in_json(data, old_field_name, new_field_name):
+    if isinstance(data, dict):
+        new_data = {}
+        for key, value in data.items():
+            # Rename the key if it matches the old_field_name
+            new_key = new_field_name if key == old_field_name else key
+            new_data[new_key] = rename_field_in_json(value, old_field_name, new_field_name)
+        return new_data
+
+    elif isinstance(data, list):
+        # Recursively apply the function to each item in the list
+        return [rename_field_in_json(item, old_field_name, new_field_name) for item in data]
+
+    # If data is not a dict or list, return it as is
+    return data
+
+def get_field_info_list(data):
+    field_info_list = []
+    if isinstance(data, dict):
+        for key, value in data.items():
+            field_info_list.append({
+                    "field_name": key,
+                    "field_type": str(type(value).__name__),
+                    "field_description": 'None',
+                    "field_values": [return_prompt_adjusted_values(type(value), value)],
+                    "elements_where_field_present": [return_prompt_adjusted_values(type(value), value)]
+                })
+            field_info_list.extend(get_field_info_list(value))
+    elif isinstance(data, list):
+        for item in data:
+            field_info_list.extend(get_field_info_list(item))
+    return field_info_list
