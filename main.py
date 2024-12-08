@@ -11,7 +11,7 @@ bucket = client.get_bucket('xg_live_ops')
 
 from src.utils.database import connect_to_mongo
 from runner import run_graph, get_changes_to_field_names
-from src.utils.large_files_ops import rename_field_in_json
+from src.utils.large_files_ops import rename_field_single_pass
 
 dotenv.load_dotenv()
 
@@ -132,8 +132,8 @@ def process_tasks(inputs):
 
 def check_for_user_feedback():
     tasks = xg_mongo_db['tasks'].find(
-    {'status': 'paused', 'stage': 'active', 'hasUserResponded': True},
-    {'_id': 1, 'userID': 1, 'description': 1, 'fields': 1}
+        {'status': 'paused', 'stage': 'active', 'hasUserResponded': True},
+        {'_id': 1, 'userID': 1, 'description': 1, 'fields': 1}
     )
 
     for task in tasks:
@@ -142,38 +142,43 @@ def check_for_user_feedback():
         description = task['description']
         fields = task['fields']
 
-        #TODO : process the task
-        print('Processing task for user', user_id, 'with task ID', task_id, 'with description', description)
+        print(f'Processing task for user {user_id} with task ID {task_id} and description: {description}')
         temp_dir = os.getcwd() + '/temp'
 
-        #download data 
+        # Download data
         blob = bucket.blob(f'{user_id}/tasks/{task_id}/out.json')
         blob.download_to_filename(f"{temp_dir}/{user_id}/{task_id}/data.json")
 
         with open(f"{temp_dir}/{user_id}/{task_id}/data.json") as f:
             data = json.load(f)
-        
+
+        # Build a field renaming map
+        field_map = {}
         for field in fields:
             if field['score'] < 3 and 'user_suggested_name' in field:
-                data = rename_field_in_json(data, field['ai_suggested_name'], field['user_suggested_name'])
+                field_map[field['ai_suggested_name']] = field['user_suggested_name']
                 field['ai_suggested_name'] = field['user_suggested_name']
                 field['score'] = 5
-        
+
+        # Apply renaming in a single pass
+        data = rename_field_single_pass(data, field_map)
+
+        # Save updated JSON data
         with open(f"{temp_dir}/{user_id}/{task_id}/data.json", 'w') as f:
             json.dump(data, f, indent=4)
-        
+
+        # Upload updated data
         blob = bucket.blob(f'{user_id}/tasks/{task_id}/out.json')
         blob.upload_from_filename(f"{temp_dir}/{user_id}/{task_id}/data.json")
-        blob.metadata = { "xg_live_ops" : "attachment", "content-disposition" : "attachment" }
-        blob.content_disposition = f"attachment; filename=data.json"
+        blob.metadata = {"xg_live_ops": "attachment", "content-disposition": "attachment"}
+        blob.content_disposition = "attachment; filename=data.json"
         blob.patch()
 
+        # Update task in MongoDB
         xg_mongo_db['tasks'].update_one(
-        {'_id': task_id},
-        {'$set': {'status': 'paused', 'stage': 'complete', 'fields': fields}}
-)
-
-
+            {'_id': task_id},
+            {'$set': {'status': 'paused', 'stage': 'complete', 'fields': fields}}
+        )
 
 if __name__ == '__main__':
     process_tasks(check_task_required_completion())

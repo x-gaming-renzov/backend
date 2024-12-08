@@ -25,3 +25,17 @@ def rename_field_in_json(data, old_field_name, new_field_name):
         return [rename_field_in_json(item, old_field_name, new_field_name) for item in data]
     else:
         return data
+
+def rename_field_single_pass(data, field_map):
+    """
+    Single-pass renaming using a hashmap of old -> new field names.
+    """
+    if isinstance(data, dict):
+        return {
+            field_map.get(key, key): rename_field_single_pass(value, field_map)
+            for key, value in data.items()
+        }
+    elif isinstance(data, list):
+        return [rename_field_single_pass(item, field_map) for item in data]
+    else:
+        return data
