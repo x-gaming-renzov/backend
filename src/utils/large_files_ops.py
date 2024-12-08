@@ -12,6 +12,20 @@ def num_tokens_from_string(string: str) -> int:
     num_tokens = len(encoding.encode(string))
     return num_tokens
 
+def rename_field_single_pass(data, field_map):
+    """
+    Single-pass renaming using a hashmap of old -> new field names.
+    """
+    if isinstance(data, dict):
+        return {
+            field_map.get(key, key): rename_field_single_pass(value, field_map)
+            for key, value in data.items()
+        }
+    elif isinstance(data, list):
+        return [rename_field_single_pass(item, field_map) for item in data]
+    else:
+        return data
+
 def rename_field_in_json(data, old_field_name, new_field_name):
     if isinstance(data, dict):
         new_data = {}
