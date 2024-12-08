@@ -74,65 +74,6 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER, should_u
 
     out = graph.invoke(graph_input, {"recursion_limit": 100})
 
-    data_info = {
-        "meaning_of_elements_in_data": str(out["meaning_of_elements_in_data"])
-    }
-
-    for field_info in out["field_info_list"]:
-        data_info[field_info.field_name] = json.loads(field_info.model_dump_json())
-
-    with open(f"""{temp_dir_path}/data_info.json""", "w") as f:
-        json.dump(data_info, f)
-
-
-    with open(f"""{temp_dir_path}/out.json""", "r") as f:
-        out_data = json.load(f)
-    with ThreadPoolExecutor() as executor:
-        nested_fields = {}
-        for element_index, element in enumerate(out_data):
-            for key in element:
-                if isinstance(element[key], list) and isinstance(element[key][0], dict):
-                    temp_value_list = element[key]
-                    for value_index, value in enumerate(temp_value_list):
-                        temp_value_list[value_index]["parent_index_do_not_change"] = element_index
-                    if key not in nested_fields:
-                        nested_fields[key] = temp_value_list
-                    else:
-                        nested_fields[key].extend(temp_value_list)
-        
-        def intialize_nested_field_folder(nested_field_name, data):
-            #create a folder for each nested field
-            nested_field_folder_path = f"""{temp_dir_path}/{nested_field_name}"""
-            pathlib.Path(nested_field_folder_path).mkdir(parents=True, exist_ok=True)
-            with open(f"""{nested_field_folder_path}/data.json""", "w") as f:
-                json.dump(data, f, indent=4)
-        
-        futures = []
-        for key in nested_fields:
-            intialize_nested_field_folder(key, nested_fields[key])
-            futures.append(executor.submit(run_graph, USER_ID, f"{USER_SESSION_ID}/{key}", "data.json", DATA_INFO_FROM_USER, False))
-            nested_fields[key] = f"""{temp_dir_path}/{key}"""
-        
-    #wait for all nested fields to complete
-    for future in as_completed(futures):
-        continue
-
-    for element_index, element in enumerate(out_data):
-        for key in element:
-            if isinstance(element[key], list) and isinstance(element[key][0], dict):
-                if key in nested_fields:
-                    nested_processed_element = []
-                    with open(f"""{nested_fields[key]}/out.json""", "r") as f:
-                        nested_out_data = json.load(f)
-                    for nested_element in nested_out_data:
-                        if "parent_index_do_not_change" in nested_element:
-                            if nested_element["parent_index_do_not_change"] == element_index:
-                                nested_processed_element.append(nested_element)
-                    out_data[element_index][key] = nested_processed_element
-        
-    with open(f"""{temp_dir_path}/out.json""", "w") as f:
-        json.dump(out_data, f, indent=4)
-
     print("Graph run done")
 
     if should_upload_files:
