@@ -131,11 +131,10 @@ def process_tasks(inputs):
     print('Tasks processed')
 
 def check_for_user_feedback():
-    tasks = xg_mongo_db['tasks'].find({
-        'status': 'paused',
-        'stage': 'active',
-        'hasUserResponded' : True
-    })
+    tasks = xg_mongo_db['tasks'].find(
+    {'status': 'paused', 'stage': 'active', 'hasUserResponded': True},
+    {'_id': 1, 'userID': 1, 'description': 1, 'fields': 1}
+    )
 
     for task in tasks:
         user_id = task['userID']
