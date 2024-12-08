@@ -131,11 +131,10 @@ def process_tasks(inputs):
     print('Tasks processed')
 
 def check_for_user_feedback():
-    tasks = xg_mongo_db['tasks'].find({
-        'status': 'paused',
-        'stage': 'active',
-        'hasUserResponded' : True
-    })
+    tasks = xg_mongo_db['tasks'].find(
+    {'status': 'paused', 'stage': 'active', 'hasUserResponded': True},
+    {'_id': 1, 'userID': 1, 'description': 1, 'fields': 1}
+    )
 
     for task in tasks:
         user_id = task['userID']
@@ -169,9 +168,11 @@ def check_for_user_feedback():
         blob.content_disposition = f"attachment; filename=data.json"
         blob.patch()
 
-        xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'status': 'paused'}})
-        xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'stage': 'complete'}})
-        xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'fields': fields}})
+        xg_mongo_db['tasks'].update_one(
+        {'_id': task_id},
+        {'$set': {'status': 'paused', 'stage': 'complete', 'fields': fields}}
+)
+
 
 
 if __name__ == '__main__':

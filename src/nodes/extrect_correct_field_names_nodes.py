@@ -10,7 +10,7 @@ from langchain.tools.retriever import create_retriever_tool
 from ..prompts.exctract_correct_field_names_template import generate_meaning_of_elements_in_data_prompt, generate_field_desc_prompt, regenerate_field_desc_prompt, generate_score_for_new_fields, regenerate_low_scored_names
 from ..states.extrect_correct_field_names_states import ExtractCorrectFieldNamesStates, FieldRenameInfo, SemanticScoreResult, SemanticRegenratedName, FieldInfo
 from ..tools.retriever_tool import get_retriever
-from ..utils.large_files_ops import return_prompt_adjusted_values, num_tokens_from_string
+from ..utils.large_files_ops import return_prompt_adjusted_values, num_tokens_from_string, get_field_info_list, rename_field_in_json
 
 
 dotenv.load_dotenv()
@@ -119,71 +119,8 @@ def preprocess_field_info(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNam
         print(colored("Error decoding JSON from file.", 'red'))
         return None
     
-    field_info_list = []
-    accounted_fields = set()
-    unique_fields = set()
-
-    for element in data:
-        #add all fields to unique_fields
-        for key in element.keys():
-            unique_fields.add(key)
+    field_info_list = get_field_info_list(data)
     
-    print(colored(f"Unique fields lenth: {len(unique_fields)}", 'white'))
-
-    for element in data:
-        for key in element.keys():
-            if element[key] is None:
-                continue
-            if key not in accounted_fields:
-                accounted_fields.add(key)
-                print(colored(f"New field added: {key}", 'yellow'))
-                field_info_list.append({
-                    "field_name": key,
-                    "field_type": str(type(element[key]).__name__),
-                    "field_description": 'None',
-                    "field_values": [return_prompt_adjusted_values(type(element[key]), element[key])],
-                    "elements_where_field_present": [return_prompt_adjusted_values(type(element), element)]
-                })
-            else:
-                for field in field_info_list:
-                    if field["field_name"] == key:
-                        if len(field["field_values"]) > 5:
-                            break
-                        field["field_values"].append(return_prompt_adjusted_values(type(element[key]), element[key]))
-                        field["elements_where_field_present"].append(return_prompt_adjusted_values(type(element), element))
-                        break
-    print(colored(f"Accounted fields length: {len(accounted_fields)}", 'white'))
-    print(colored(f"Field info list length: {len(field_info_list)}", 'white'))
-    
-    def get_element_with_field_name(field_name):
-        count = 0
-        elements = []
-        for event in data:
-            if field_name in event:
-                count += 1
-                elements.append(event)
-                if count >= 3:
-                    break
-        return elements
-
-    unaccounted_fields = set()
-    for data_field in unique_fields : 
-        if data_field not in accounted_fields:
-            unaccounted_fields.add(data_field)
-            print(colored(f"Unaccounted field added: {data_field}", 'yellow'))
-
-    print(colored(f"Unaccounted fields length: {len(unaccounted_fields)}", 'white'))
-    
-    for unaccounted_field in unaccounted_fields:
-        elements = get_element_with_field_name(unaccounted_field)
-        elements = [return_prompt_adjusted_values(type(element), element) for element in elements]
-        field_info_list.append({
-            'field_name': unaccounted_field,
-            'field_type': 'None',
-            'field_description': 'None',
-            'field_values': ['none everywhere'],
-            'elements_where_field_present': elements})
-
     ExtractCorrectFieldNamesStates.field_info_list = field_info_list
     print(colored("Field information processed successfully", "green"))
     return ExtractCorrectFieldNamesStates
@@ -560,4 +497,35 @@ def rejoin_batches(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNamesState
             os.remove(f'{temp_dir_path}/{file}')
             print(colored(f"Deleted file: {file}", "yellow"))
 
+    return ExtractCorrectFieldNamesStates
+
+def process_whole_file(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNamesStates) -> ExtractCorrectFieldNamesStates:
+    print(colored("Processing whole file...", "yellow"))
+    temp_dir_path = os.getcwd() + f'/temp/{ExtractCorrectFieldNamesStates.user_id}/{ExtractCorrectFieldNamesStates.user_session_id}'
+
+    try:
+        #open file data file
+        print(colored(f"Opening file: {ExtractCorrectFieldNamesStates.file_name}", 'blue'))
+        with open(f'{temp_dir_path}/{ExtractCorrectFieldNamesStates.file_name}', 'r') as f:
+            whole_data = json.load(f)
+            print(colored("File data loaded successfully", "green"))
+    except FileNotFoundError:
+        print(colored("File not found. Re-flatten process initiated.", 'red'))
+        return None
+    except json.JSONDecodeError:
+        print(colored("Error decoding JSON from file.", 'red'))
+        return None
+    
+    field_name_mapping = {}
+
+    for field_info in ExtractCorrectFieldNamesStates.field_info_list:
+        field_name_mapping[field_info.field_name] = field_info.field_new_name
+    
+    for old_field_name in field_name_mapping:
+        whole_data = rename_field_in_json(whole_data, old_field_name, field_name_mapping[old_field_name])
+
+    with open(f'{temp_dir_path}/out.json', 'w') as f:
+        json.dump(whole_data, f, indent=4)
+        print(colored("File processed successfully", "green"))
+    
     return ExtractCorrectFieldNamesStates
