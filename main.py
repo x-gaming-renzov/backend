@@ -11,6 +11,7 @@ bucket = client.get_bucket('xg_live_ops')
 
 from src.utils.database import connect_to_mongo
 from runner import run_graph, get_changes_to_field_names
+from src.utils.large_files_ops import rename_field_in_json
 
 dotenv.load_dotenv()
 
@@ -32,7 +33,7 @@ def check_task_required_completion():
         if 'touched' in task:
             continue
         # add 'touched' field to task
-        #xg_mongo_db['tasks'].update_one({'_id': task['_id']}, {'$set': {'touched': True}})
+        xg_mongo_db['tasks'].update_one({'_id': task['_id']}, {'$set': {'touched': True}})
 
         user_id = task['userID']
         task_id = task['_id']
@@ -113,8 +114,8 @@ def process_tasks(inputs):
         for index, row in changes_df.iterrows():
             fields_names.append(
                 {
-                    'old_name': row['old_names'],
-                    'new_name': row['new_name'],
+                    'original_name': row['old_names'],
+                    'ai_suggested_name': row['new_name'],
                     'score': row['score']
                 }
             )
@@ -129,5 +130,50 @@ def process_tasks(inputs):
 
     print('Tasks processed')
 
+def check_for_user_feedback():
+    tasks = xg_mongo_db['tasks'].find({
+        'status': 'paused',
+        'stage': 'active',
+        'hasUserResponded' : True
+    })
+
+    for task in tasks:
+        user_id = task['userID']
+        task_id = task['_id']
+        description = task['description']
+        fields = task['fields']
+
+        #TODO : process the task
+        print('Processing task for user', user_id, 'with task ID', task_id, 'with description', description)
+        temp_dir = os.getcwd() + '/temp'
+
+        #download data 
+        blob = bucket.blob(f'{user_id}/tasks/{task_id}/out.json')
+        blob.download_to_filename(f"{temp_dir}/{user_id}/{task_id}/data.json")
+
+        with open(f"{temp_dir}/{user_id}/{task_id}/data.json") as f:
+            data = json.load(f)
+        
+        for field in fields:
+            if field['score'] < 3 and 'user_suggested_name' in field:
+                data = rename_field_in_json(data, field['ai_suggested_name'], field['user_suggested_name'])
+                field['ai_suggested_name'] = field['user_suggested_name']
+                field['score'] = 5
+        
+        with open(f"{temp_dir}/{user_id}/{task_id}/data.json", 'w') as f:
+            json.dump(data, f, indent=4)
+        
+        blob = bucket.blob(f'{user_id}/tasks/{task_id}/out.json')
+        blob.upload_from_filename(f"{temp_dir}/{user_id}/{task_id}/data.json")
+        blob.metadata = { "xg_live_ops" : "attachment", "content-disposition" : "attachment" }
+        blob.content_disposition = f"attachment; filename=data.json"
+        blob.patch()
+
+        xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'status': 'paused'}})
+        xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'stage': 'complete'}})
+        xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'fields': fields}})
+
+
 if __name__ == '__main__':
     process_tasks(check_task_required_completion())
+    check_for_user_feedback()
