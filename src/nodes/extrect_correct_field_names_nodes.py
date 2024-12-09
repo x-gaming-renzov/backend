@@ -120,6 +120,11 @@ def preprocess_field_info(ExtractCorrectFieldNamesStates: ExtractCorrectFieldNam
         return None
     
     field_info_list = get_field_info_list(data)
+
+    #print field names 
+    print(colored("Field names extracted: ", "yellow"))
+    for field_info in field_info_list:
+        print(colored(f"Field name: {field_info['field_name']}", "yellow"))
     
     ExtractCorrectFieldNamesStates.field_info_list = field_info_list
     print(colored("Field information processed successfully", "green"))
@@ -211,6 +216,8 @@ def save_field_info(ExtractCorrectFieldNamesStates : ExtractCorrectFieldNamesSta
     return ExtractCorrectFieldNamesStates
 
 def fetch_overlapping_field_names(field_info_list):
+    print(colored("Checking for overlapping field names...", "yellow"))
+    print(colored(f"Field info list: {field_info_list}", "yellow"))
     same_field_name_dict = {}
     for field_info in field_info_list:
         if field_info.field_new_name in same_field_name_dict:

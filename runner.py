@@ -76,6 +76,13 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER, should_u
 
     print("Graph run done")
 
+    with open(f"""{temp_dir_path}/data_info.json""", "w") as f:
+        field_info_list = out["field_info_list"]
+        data_info = {}
+        for field_info in field_info_list:
+            data_info[field_info.field_name] = json.loads(field_info.model_dump_json())
+        json.dump(data_info, f, indent=4)
+
     if should_upload_files:
         upload_input_files("out.json", "application/json", USER_ID, USER_SESSION_ID)
 

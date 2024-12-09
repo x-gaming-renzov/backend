@@ -77,14 +77,28 @@ def check_task_required_completion():
             collection = task['collection']
             db_name = task['db_name']
 
-            #download data from mongo and save to data.json
+            print(f"Connecting to mongo at {mongo_uri} and fetching data from {collection} in {db_name}")
+
+            #download all documents from mongo and save to data.json
             user_mongo_db = connect_to_mongo(mongo_uri, db_name)
-            data = list(user_mongo_db[collection].find({}))
+            data = [doc for doc in user_mongo_db[collection].find()]
+            print('Downloaded data from mongo')
+            print(data)
             
-            for d in data:
-                d['_id'] = str(d['_id'])
+            # Convert ObjectId to string for JSON serialization
+            def convert_objectids(doc):
+                if isinstance(doc, dict):
+                    return {k: convert_objectids(v) for k, v in doc.items()}
+                elif isinstance(doc, list):
+                    return [convert_objectids(v) for v in doc]
+                elif not isinstance(doc, (int, float, str)):
+                    return str(doc)
+                else:
+                    return doc
+
+            converted_documents = [convert_objectids(doc) for doc in data]
             with open(f"{temp_dir}/{user_id}/{task_id}/data.json", 'w') as f:
-                json.dump(data, f, indent=4)
+                json.dump(converted_documents, f, indent=4)
             
             inputs.append({
                 'user_id' : user_id,
@@ -132,7 +146,7 @@ def process_tasks(inputs):
 
 def check_for_user_feedback():
     tasks = xg_mongo_db['tasks'].find(
-    {'status': 'paused', 'stage': 'active', 'hasUserResponded': True},
+    {'hasUserResponded': True},
     {'_id': 1, 'userID': 1, 'description': 1, 'fields': 1}
     )
 
@@ -148,33 +162,47 @@ def check_for_user_feedback():
 
         #download data 
         blob = bucket.blob(f'{user_id}/tasks/{task_id}/out.json')
-        blob.download_to_filename(f"{temp_dir}/{user_id}/{task_id}/data.json")
+        blob.download_to_filename(f"{temp_dir}/{user_id}/{task_id}/data_to_rename.json")
 
-        with open(f"{temp_dir}/{user_id}/{task_id}/data.json") as f:
+        with open(f"{temp_dir}/{user_id}/{task_id}/data_to_rename.json") as f:
             data = json.load(f)
         
         for field in fields:
-            if field['score'] < 3 and 'user_suggested_name' in field:
+            if 'user_suggested_name' in field:
+                print('Renaming field', field['ai_suggested_name'], 'to', field['user_suggested_name'])
                 data = rename_field_in_json(data, field['ai_suggested_name'], field['user_suggested_name'])
                 field['ai_suggested_name'] = field['user_suggested_name']
                 field['score'] = 5
         
-        with open(f"{temp_dir}/{user_id}/{task_id}/data.json", 'w') as f:
+        with open(f"{temp_dir}/{user_id}/{task_id}/data_to_rename.json", 'w') as f:
             json.dump(data, f, indent=4)
         
         blob = bucket.blob(f'{user_id}/tasks/{task_id}/out.json')
-        blob.upload_from_filename(f"{temp_dir}/{user_id}/{task_id}/data.json")
+        blob.upload_from_filename(f"{temp_dir}/{user_id}/{task_id}/data_to_rename.json")
         blob.metadata = { "xg_live_ops" : "attachment", "content-disposition" : "attachment" }
         blob.content_disposition = f"attachment; filename=data.json"
         blob.patch()
 
         xg_mongo_db['tasks'].update_one(
-        {'_id': task_id},
-        {'$set': {'status': 'paused', 'stage': 'complete', 'fields': fields}}
-)
+            {'_id': task_id},
+            {'$set': {'status': 'paused', 'stage': 'complete', 'fields': fields}}
+        )
+
+        xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$unset': {'hasUserResponded': 1}})
 
 
 
 if __name__ == '__main__':
-    process_tasks(check_task_required_completion())
-    check_for_user_feedback()
+    while True:
+        try:
+            process_tasks(check_task_required_completion())
+            check_for_user_feedback()
+        except Exception as e:
+            #check is log.txt exists
+            if not os.path.exists('log.txt'):
+                with open('log.txt', 'w') as f:
+                    f.write(str(e))
+            else:
+                with open('log.txt', 'a') as f:
+                    f.write(str(e))
+            continue
