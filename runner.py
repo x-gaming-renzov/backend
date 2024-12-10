@@ -10,6 +10,7 @@ import uuid
 from typing import Set
 from src.flat.main import flatten_json_leaving_lists
 import src.graph
+import subprocess
 
 """__import__('pysqlite3')
 import sys
@@ -91,18 +92,36 @@ def run_graph(USER_ID, USER_SESSION_ID, FILE_NAME, DATA_INFO_FROM_USER, should_u
 def upload_input_files(file_name, file_type, USER_ID, USER_SESSION_ID):
     user_id = USER_ID
     user_session_id = USER_SESSION_ID
-    file_name = file_name
 
-    print(colored(f"Uploading file: {file_name}", "green"))
+    file_path = os.path.join(os.getcwd(), f"temp/{user_id}/{user_session_id}/{file_name}")
+    gcs_path = f"gs://{bucket.name}/{user_id}/tasks/{user_session_id}/{file_name}"
 
-    blob = bucket.blob(f"""{user_id}/tasks/{user_session_id}/{file_name}""")
-    blob.upload_from_filename(os.getcwd() + f"""/temp/{user_id}/{user_session_id}/{file_name}""", content_type=file_type)
-    blob.metadata = { "xg_live_ops" : "attachment", "content-disposition" : "attachment" }
-    blob.patch()
-    blob.content_disposition = f"attachment; filename={file_name}"
-    blob.patch()
+    print(colored(f"Uploading file: {file_name} with gsutil", "green"))
 
-    print(colored(f"File uploaded to: {blob.public_url}", "green"))
+    # Step 1: Upload the file with gsutil
+    subprocess.run(["gsutil", "-o", "GSUtil:parallel_composite_upload_threshold=150M", "cp", file_path, gcs_path], check=True)
+
+    print(colored(f"File uploaded to: {gcs_path}", "green"))
+
+    # Step 2: Set metadata programmatically
+    print(colored(f"Setting metadata for: {file_name}", "green"))
+
+    try:
+        # Get the blob object
+        blob_path = f"{user_id}/tasks/{user_session_id}/{file_name}"
+        blob = bucket.blob(blob_path)
+
+        # Set metadata
+        blob.metadata = {"xg_live_ops": "attachment"}
+        blob.content_disposition = f"attachment; filename={file_name}"
+
+        # Patch the blob to apply metadata changes
+        blob.patch()
+
+        print(colored(f"Metadata successfully set for: {blob.public_url}", "green"))
+
+    except Exception as e:
+        print(colored(f"Error setting metadata: {e}", "red"))
 
 # Modify upload_all_files to accept callback
 def upload_all_files_async(USER_ID, USER_SESSION_ID, callback=None):
