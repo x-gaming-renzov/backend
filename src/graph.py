@@ -15,7 +15,8 @@ def get_feild_name_correcting_task_graph():
     workflow.add_node("regenerate_field_name", regenerate_field_name)
     workflow.add_node("generate_score_for_new_fields", score_generation)
     workflow.add_node("regenerate_low_scored_names", regenerate_low_scored_fields)
-    workflow.add_node("process_whole_file", process_whole_file)
+    workflow.add_node("rejoin_batches", rejoin_batches)
+    workflow.add_node("process_whole_file_in_batches", process_whole_file_in_batches)
 
     workflow.add_conditional_edges(
         "get_element_meaning",
@@ -39,8 +40,9 @@ def get_feild_name_correcting_task_graph():
     workflow.add_edge("generate_field_name_description", "generate_score_for_new_fields")
     workflow.add_edge("generate_score_for_new_fields", "regenerate_low_scored_names")
     workflow.add_edge("retireve", 'get_element_meaning')
-    workflow.add_edge("save_field_info", "process_whole_file")
-    workflow.add_edge("process_whole_file", END)
+    workflow.add_edge("save_field_info", "process_whole_file_in_batches")
+    workflow.add_edge("process_whole_file_in_batches", "rejoin_batches")
+    workflow.add_edge("rejoin_batches", END)
 
     workflow.add_edge(START, "get_first_few_elements")
 

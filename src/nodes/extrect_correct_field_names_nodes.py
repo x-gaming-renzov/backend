@@ -471,7 +471,7 @@ def process_whole_file_in_batches(ExtractCorrectFieldNamesStates: ExtractCorrect
             batch_element = {}
             for key in element.keys():
                 if key in field_name_mapping:
-                    batch_element[field_name_mapping[key]] = element[key]
+                    batch_element = rename_field_in_json(element, key, field_name_mapping[key])
             batch.append(batch_element)
         batch_index += min(batch_index + batch_size, len(whole_data))
 
