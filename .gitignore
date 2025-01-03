@@ -3,3 +3,4 @@ temp
 data.json
 gcreds.json
 .venv
+__pycache__/

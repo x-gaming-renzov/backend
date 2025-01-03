@@ -10,7 +10,6 @@ from gcloud import storage
 load_dotenv()
 
 from src.utils.database import connect_to_mongo
-from runner import run_graph, get_changes_to_field_names
 from src.utils.large_files_ops import rename_field_in_json
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -24,7 +23,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("task_processor")
 
 # Load environment variables
+print("Connecting to mongo")
 xg_mongo_db = connect_to_mongo(os.getenv('XG_MONGO_URI'), os.getenv('XG_MONGO_DB'))
+print("Connected to mongo")
 
 # Initialize Google Cloud Storage client
 credentials = ServiceAccountCredentials.from_json_keyfile_name('gcreds.json')
@@ -67,6 +68,9 @@ def process_task_completion(task_id):
                     kb += '\n'+ description
                 with open(f"{task_path}/kb.txt", 'w') as f:
                     f.write(kb)
+            else:
+                with open(f"{task_path}/kb.txt", 'w') as f:
+                    f.write(description)
 
             with open(f"{task_path}/data.json", 'wb') as f:
                 f.write(r.content)
@@ -195,4 +199,5 @@ def health_check():
     return jsonify({'status': 'healthy'}), 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=(os.getenv('PORT', 8080)),debug=True)
+    #app.run(host='0.0.0.0', port=(os.getenv('PORT', 8080)),debug=True)
+    process_task_completion('eb36b4ba-3217-4da2-9f72-7db9e1920261')
