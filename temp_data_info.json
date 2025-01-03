@@ -1,142 +1,557 @@
 {
-    "d7_retained": {
-        "old_name": "d7_retained",
-        "new_name": "d7_retained_player_activity_log",
-        "score": 4.0
-    },
-    "d14_retained": {
-        "old_name": "d14_retained",
-        "new_name": "daily_retained_players",
-        "score": 4.0
-    },
-    "events": {
-        "old_name": "events",
-        "new_name": "player_event_log",
-        "score": 4.0
-    },
-    "player_id": {
-        "old_name": "player_id",
-        "new_name": "unique_player_identifier",
-        "score": 4.0
-    },
-    "mp_country_code": {
-        "old_name": "mp_country_code",
-        "new_name": "player_country_code",
-        "score": 4.0
-    },
-    "event": {
-        "old_name": "event",
-        "new_name": "event_type",
-        "score": 4.0
-    },
-    "victim_name": {
-        "old_name": "victim_name",
-        "new_name": "chat_message_sender",
-        "score": 4.0
-    },
-    "victim_type": {
-        "old_name": "victim_type",
-        "new_name": "victim_player_names",
-        "score": 4.0
-    },
-    "distinct_id": {
-        "old_name": "distinct_id",
-        "new_name": "player_unique_identifier",
-        "score": 4.0
-    },
-    "trade-suggested": {
-        "old_name": "trade-suggested",
-        "new_name": "suggested_trade_value",
-        "score": 4.0
-    },
-    "world": {
-        "old_name": "world",
-        "new_name": "virtual_game_environment",
-        "score": 4.0
-    },
-    "timestamp": {
-        "old_name": "timestamp",
-        "new_name": "event_occurred_at",
-        "score": 4.0
-    },
-    "time": {
-        "old_name": "time",
-        "new_name": "event_timestamp_int",
-        "score": 4.0
-    },
-    "server": {
-        "old_name": "server",
-        "new_name": "game_server_name",
-        "score": 4.0
-    },
-    "advancement": {
-        "old_name": "advancement",
-        "new_name": "player_advancement_id",
-        "score": 4.0
-    },
-    "username": {
-        "old_name": "username",
-        "new_name": "player_username",
-        "score": 4.0
-    },
-    "entity_type": {
-        "old_name": "entity_type",
-        "new_name": "traded_item_details",
-        "score": 4.0
-    },
-    "cause": {
-        "old_name": "cause",
-        "new_name": "block_interaction_cause",
-        "score": 4.0
-    },
-    "trade-menu": {
-        "old_name": "trade-menu",
-        "new_name": "npc_trade_suggestions",
-        "score": 4.0
-    },
-    "reason": {
-        "old_name": "reason",
-        "new_name": "interaction_purpose",
-        "score": 4.0
-    },
-    "npc-reply": {
-        "old_name": "npc-reply",
-        "new_name": "npc_trade_response_items",
-        "score": 4.0
-    },
-    "first-chat": {
-        "old_name": "first-chat",
-        "new_name": "first_chat_message",
-        "score": 4.0
-    },
-    "item": {
-        "old_name": "item",
-        "new_name": "item_id",
-        "score": 4.0
-    },
-    "item-take": {
-        "old_name": "item-take",
-        "new_name": "item_taken_details",
-        "score": 4.0
-    },
-    "item-give": {
-        "old_name": "item-give",
-        "new_name": "item_giving_transaction_details",
-        "score": 4.0
-    },
-    "block": {
-        "old_name": "block",
-        "new_name": "crafting_recipe_block",
-        "score": 4.0
-    },
-    "message": {
-        "old_name": "message",
-        "new_name": "player_interaction_message",
-        "score": 4.0
-    },
-    "entity": {
-        "old_name": "entity",
-        "new_name": "player_interaction_entity",
-        "score": 4.0
-    }
+	"_id": "eb36b4ba-3217-4da2-9f72-7db9e1920261",
+	"userID": "zwWtUrucPja2SArvkO1dbVHjofe2",
+	"name": "h",
+	"description": "m",
+	"kb_url": "",
+	"data_url": "https://storage.googleapis.com/xg_live_ops/zwWtUrucPja2SArvkO1dbVHjofe2/tasks/eb36b4ba-3217-4da2-9f72-7db9e1920261/data.json",
+	"stage": "complete",
+	"status": "paused",
+	"type": "json",
+	"sourceID": null,
+	"hasUserResponded": false,
+	"fields": [
+		{
+			"original_name": ["x"],
+			"ai_suggested_name": "player_x_coordinate",
+			"score": 5
+		},
+		{
+			"original_name": ["drops"],
+			"ai_suggested_name": "dropped_items",
+			"score": 4
+		},
+		{
+			"original_name": ["z"],
+			"ai_suggested_name": "player_vertical_coordinate",
+			"score": 5
+		},
+		{
+			"original_name": ["y"],
+			"ai_suggested_name": "player_height_relative_to_ground",
+			"score": 5
+		},
+		{
+			"original_name": ["type"],
+			"ai_suggested_name": "block_type",
+			"score": 4
+		},
+		{
+			"original_name": ["action"],
+			"ai_suggested_name": "player_action_type",
+			"score": 4
+		},
+		{
+			"original_name": ["tool"],
+			"ai_suggested_name": "equipped_tool",
+			"score": 4
+		},
+		{
+			"original_name": ["location"],
+			"ai_suggested_name": "player_coordinates",
+			"score": 4
+		},
+		{
+			"original_name": ["crafted_item"],
+			"ai_suggested_name": "crafted_item_name",
+			"score": 5,
+			"user_suggested_name": "crafted_item_name"
+		},
+		{
+			"original_name": ["reason"],
+			"ai_suggested_name": "damage_reason",
+			"score": 4
+		},
+		{
+			"original_name": ["mob"],
+			"ai_suggested_name": "creature_type",
+			"score": 4
+		},
+		{
+			"original_name": ["loot"],
+			"ai_suggested_name": "loot_items",
+			"score": 4
+		},
+		{
+			"original_name": [
+				"events_log.game_events.player_12345.join_event.timestamp"
+			],
+			"ai_suggested_name": "player_join_event_timestamp",
+			"score": 4
+		},
+		{
+			"original_name": [
+				"events_log.game_events.player_12345.join_event.location.x"
+			],
+			"ai_suggested_name": "player_12345_join_event_location_x_coordinate",
+			"score": 4
+		},
+		{
+			"original_name": [
+				"events_log.game_events.player_12345.join_event.details"
+			],
+			"ai_suggested_name": "game_event_player_join_details",
+			"score": 4
+		},
+		{
+			"original_name": ["materials"],
+			"ai_suggested_name": "crafted_materials",
+			"score": 4
+		},
+		{
+			"original_name": [
+				"events_log.game_events.player_12345.join_event.location.y"
+			],
+			"ai_suggested_name": "player_join_event_location_y_coordinate",
+			"score": 4
+		},
+		{
+			"original_name": ["events_log.game_events.player_12345.actions"],
+			"ai_suggested_name": "player_12345_action_logs",
+			"score": 4
+		},
+		{
+			"original_name": ["timestamp"],
+			"ai_suggested_name": "player_event_timestamp",
+			"score": 4
+		},
+		{
+			"original_name": ["block"],
+			"ai_suggested_name": "block_details",
+			"score": 4
+		},
+		{
+			"original_name": [
+				"events_log.game_events.player_67890.chat_event.channel"
+			],
+			"ai_suggested_name": "chat_event_channel_global",
+			"score": 4
+		},
+		{
+			"original_name": [
+				"events_log.game_events.player_67890.chat_event.message"
+			],
+			"ai_suggested_name": "player_67890_game_chat_message",
+			"score": 4
+		},
+		{
+			"original_name": ["events_log.game_events.player_67890.actions"],
+			"ai_suggested_name": "player_actions_log_for_player_67890",
+			"score": 4
+		},
+		{
+			"original_name": [
+				"events_log.game_events.player_67890.chat_event.timestamp"
+			],
+			"ai_suggested_name": "player_67890_chat_event_timestamp",
+			"score": 4
+		},
+		{
+			"original_name": [
+				"events_log.game_events.player_12345.join_event.location.z"
+			],
+			"ai_suggested_name": "player_12345_join_event_location_z_coordinate",
+			"score": 4
+		}
+	],
+	"metadata_output": {
+		"field_mapping": [
+			{
+				"new_field_name": "events_log.game_events.player_12345.join_event.details",
+				"old_field_name": "Player 12345 Join Event Details"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_12345.actions.item.reason",
+				"old_field_name": "game_event_actions_player_12345_reason_for_action"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_12345.join_event.location.z",
+				"old_field_name": "Player Join Event Height Coordinate (Z-Axis)"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_12345.join_event.location.x",
+				"old_field_name": "Player 12345 Join Event X Coordinate on Map"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_12345.actions.item.timestamp",
+				"old_field_name": "Game Event Action Timestamp for Player 12345"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_67890.actions.item.location.x",
+				"old_field_name": "Player 67890 Item Location Horizontal Coordinate (X-axis) in Game World"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_12345.actions.item.block.tool",
+				"old_field_name": "Player 12345 Game Actions Tool Usage"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_67890.chat_event.timestamp",
+				"old_field_name": "Game Event - Player 67890 Chat Message Timestamp"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_12345.join_event.location.y",
+				"old_field_name": "Player 12345 Join Event Vertical Location (Y Coordinate)"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_67890.actions.item.action",
+				"old_field_name": "Player 67890 Actions on Game Items"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_12345.actions.item.drops.item",
+				"old_field_name": "Items_Dropped_By_Player_12345_During_Game_Events"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_12345.actions.item.location.x",
+				"old_field_name": "Player 12345 Game Action Item Horizontal Position on Map (X-Coordinate)"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_12345.actions.item.crafted_item",
+				"old_field_name": "Player 12345 Crafted Items Log"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_12345.actions.item.block.type",
+				"old_field_name": "Player 12345 Game Interaction Item Block Type"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_12345.actions.item.materials.item",
+				"old_field_name": "Player 12345 Collected and Used Items Log"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_12345.actions.item.location.y",
+				"old_field_name": "Player 12345 Item Vertical Position (Y-Coordinate) in Game"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_12345.join_event.timestamp",
+				"old_field_name": "Event Join Timestamp for Player 12345"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_67890.actions.item.location.z",
+				"old_field_name": "Game Item Vertical Position (Z-coordinate)"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_67890.actions.item.loot.item",
+				"old_field_name": "Player 67890 Looted Items During Gameplay"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_67890.chat_event.message",
+				"old_field_name": "Player 67890 Chat Messages During Game Events"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_12345.actions.item.action",
+				"old_field_name": "Player 12345 Game Actions Log"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_67890.actions.item.tool",
+				"old_field_name": "Player 67890 Game Events Tool Usage"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_67890.actions.item.location.y",
+				"old_field_name": "Player 67890 Item Vertical Location (Y-Axis) in Game"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_67890.actions.item.mob",
+				"old_field_name": "Player 67890 Game Interactions with Entities (e.g., Zombies)"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_67890.chat_event.channel",
+				"old_field_name": "Game Event Chat Channel Used by Player 67890"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_12345.actions.item.block.drops.item",
+				"old_field_name": "ItemsDroppedByBlockWhenPlayerInteracts_Player12345"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_67890.actions.item.timestamp",
+				"old_field_name": "Timestamp of Item Action for Player 67890"
+			},
+			{
+				"new_field_name": "events_log.game_events.player_12345.actions.item.location.z",
+				"old_field_name": "Player 12345 Item Action Vertical Location (Height/Depth)"
+			}
+		],
+		"enhanced_descriptions": [
+			{
+				"field_name": "events_log.game_events.player_12345.join_event.details",
+				"description": "This field contains details about events when player 12345 joins the game, such as messages indicating their participation."
+			},
+			{
+				"field_name": "events_log.game_events.player_12345.actions.item.reason",
+				"description": "This field records the reasons for actions taken by player 12345 in the game, such as taking fall damage."
+			},
+			{
+				"field_name": "events_log.game_events.player_12345.join_event.location.z",
+				"description": "This field represents the vertical coordinate (z-axis) of the player's location when they joined the event, with values indicating the height above or below a reference point, such as -300."
+			},
+			{
+				"field_name": "events_log.game_events.player_12345.join_event.location.x",
+				"description": "This field records the X coordinate of the location where player 12345 joined an event, with values indicating the horizontal position on a map."
+			},
+			{
+				"field_name": "events_log.game_events.player_12345.actions.item.timestamp",
+				"description": "This field records the exact timestamps of item actions performed by player 12345 in the game, formatted in ISO 8601 standard."
+			},
+			{
+				"field_name": "events_log.game_events.player_67890.actions.item.location.x",
+				"description": "This field represents the horizontal (X-axis) coordinate of an item’s location in the game world for player 67890, with values indicating the position in units (e.g., pixels or meters)."
+			},
+			{
+				"field_name": "events_log.game_events.player_12345.actions.item.block.tool",
+				"description": "This field records the tools used by player 12345 in their game actions, such as a diamond pickaxe."
+			},
+			{
+				"field_name": "events_log.game_events.player_67890.chat_event.timestamp",
+				"description": "This field records the precise date and time when player 67890 sent a chat message during the game, formatted in ISO 8601 standard."
+			},
+			{
+				"field_name": "events_log.game_events.player_12345.join_event.location.y",
+				"description": "This field represents the vertical coordinate (Y-axis) of player 12345's location when they joined an event, with values recorded in a 2D space, such as 64."
+			},
+			{
+				"field_name": "events_log.game_events.player_67890.actions.item.action",
+				"description": "This field records the specific actions performed by player 67890 on items during gameplay, such as killing a mob."
+			},
+			{
+				"field_name": "events_log.game_events.player_12345.actions.item.drops.item",
+				"description": "This field lists the specific items dropped by player 12345 during game events, including examples like diamond_pickaxe and iron_helmet."
+			},
+			{
+				"field_name": "events_log.game_events.player_12345.actions.item.location.x",
+				"description": "This field represents the X-coordinate of the item location for player 12345's actions in the game, with values indicating the horizontal position on the game map."
+			},
+			{
+				"field_name": "events_log.game_events.player_12345.actions.item.crafted_item",
+				"description": "This field records the items crafted by player 12345, such as a golden apple."
+			},
+			{
+				"field_name": "events_log.game_events.player_12345.actions.item.block.type",
+				"description": "This field represents the type of item block that player 12345 interacts with in the game, such as stone or other materials."
+			},
+			{
+				"field_name": "events_log.game_events.player_12345.actions.item.materials.item",
+				"description": "This field lists the various items collected or used by player 12345, such as gold ingots and apples."
+			},
+			{
+				"field_name": "events_log.game_events.player_12345.actions.item.location.y",
+				"description": "This field represents the vertical position (Y-coordinate) of an item associated with player 12345 in the game, with values indicating specific height levels such as 63, 65, and 64."
+			},
+			{
+				"field_name": "events_log.game_events.player_12345.join_event.timestamp",
+				"description": "This field records the exact date and time when player 12345 joined an event, formatted in ISO 8601 (e.g., 2024-11-21T10:00:00Z)."
+			},
+			{
+				"field_name": "events_log.game_events.player_67890.actions.item.location.z",
+				"description": "This field 'events_log.game_events.player_67890.actions.item.location.z' records the vertical position (Z-coordinate) of an item in the game world, with values indicating height or depth, such as -200."
+			},
+			{
+				"field_name": "events_log.game_events.player_67890.actions.item.loot.item",
+				"description": "This field records the types of items looted by player 67890 during gameplay, including examples like iron ingots and rotten flesh."
+			},
+			{
+				"field_name": "events_log.game_events.player_67890.chat_event.message",
+				"description": "This field captures the chat messages sent by player 67890 during game events, reflecting their in-game communication, such as asking others if they're interested in a raid."
+			},
+			{
+				"field_name": "events_log.game_events.player_12345.actions.item.action",
+				"description": "This field records the various actions performed by player 12345 in the game, including events like player death, breaking blocks, and crafting items."
+			},
+			{
+				"field_name": "events_log.game_events.player_67890.actions.item.tool",
+				"description": "This field records the specific tools used by player 67890 during their game events, such as an iron sword."
+			},
+			{
+				"field_name": "events_log.game_events.player_67890.actions.item.location.y",
+				"description": "This field represents the vertical (Y-axis) location of an item in the game environment for player 67890, with values indicating its height or elevation."
+			},
+			{
+				"field_name": "events_log.game_events.player_67890.actions.item.mob",
+				"description": "This field records the types of entities, such as zombies, that player 67890 interacts with in the game."
+			},
+			{
+				"field_name": "events_log.game_events.player_67890.chat_event.channel",
+				"description": "This field indicates the chat channel used by player 67890 during game events, with possible values including global chat."
+			},
+			{
+				"field_name": "events_log.game_events.player_12345.actions.item.block.drops.item",
+				"description": "This field lists the items dropped by a block when interacted with by player 12345, such as cobblestone."
+			},
+			{
+				"field_name": "events_log.game_events.player_67890.actions.item.timestamp",
+				"description": "This field records the timestamp of when a specific item action occurred for player 67890, formatted in ISO 8601 standard."
+			},
+			{
+				"field_name": "events_log.game_events.player_12345.actions.item.location.z",
+				"description": "This field records the vertical (z-coordinate) location of item actions performed by player 12345 in the game, with values indicating height or depth relative to a baseline."
+			}
+		],
+		"semantic_clarity_report": [
+			{
+				"old_field_name": "events_log.game_events.player_12345.join_event.details",
+				"new_field_name": "Player 12345 Join Event Details",
+				"clarity_improvement_score": "4.0",
+				"justification": "The new field name 'Player 12345 Join Event Details' is significantly clearer than the old name. It uses a straightforward and familiar format that directly communicates the content and context of the data, making it more understandable to users."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_12345.actions.item.reason",
+				"new_field_name": "game_event_actions_player_12345_reason_for_action",
+				"clarity_improvement_score": "3.0",
+				"justification": "The new field name is more concise and structured, making it easier to understand its purpose. It clearly indicates that it relates to actions taken in a game context, specifically for a player, and specifies that it pertains to the reason for the action, enhancing semantic clarity."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_12345.join_event.location.z",
+				"new_field_name": "Player Join Event Height Coordinate (Z-Axis)",
+				"clarity_improvement_score": "4.0",
+				"justification": "The new field name 'Player Join Event Height Coordinate (Z-Axis)' is significantly clearer than the old name. It explicitly describes the purpose of the data (a height coordinate related to player join events) while the old name is long and less intuitive."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_12345.join_event.location.x",
+				"new_field_name": "Player 12345 Join Event X Coordinate on Map",
+				"clarity_improvement_score": "4.0",
+				"justification": "The new field name explicitly describes the data it represents (the x-coordinate of the player's join event on a map) in a clear and user-friendly manner. This is a significant improvement over the old field name, which is overly technical and less intuitive."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_12345.actions.item.timestamp",
+				"new_field_name": "Game Event Action Timestamp for Player 12345",
+				"clarity_improvement_score": "4.0",
+				"justification": "The new field name is significantly clearer than the old one. It uses plain language that directly conveys the purpose of the field, making it easy to understand that it represents the timestamp of game event actions for a specific player. The old field name is overly technical and nested, which can lead to confusion."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_67890.actions.item.location.x",
+				"new_field_name": "Player 67890 Item Location Horizontal Coordinate (X-axis) in Game World",
+				"clarity_improvement_score": "5.0",
+				"justification": "The new field name clearly describes the specific data it represents (the horizontal coordinate on the X-axis for a player's item location in the game world), making it much easier to understand compared to the old, technical, and convoluted field name."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_12345.actions.item.block.tool",
+				"new_field_name": "Player 12345 Game Actions Tool Usage",
+				"clarity_improvement_score": "5.0",
+				"justification": "The new field name 'Player 12345 Game Actions Tool Usage' is significantly clearer than the old field name. It provides a concise description of the data it represents, making it easier for users to understand the content and context of the field. The old field name is overly complex and difficult to interpret."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_67890.chat_event.timestamp",
+				"new_field_name": "Game Event - Player 67890 Chat Message Timestamp",
+				"clarity_improvement_score": "4.0",
+				"justification": "The new field name is significantly clearer as it uses a more readable format, explicitly describes the content (Chat Message Timestamp), and removes the technical jargon of the old name while maintaining the necessary details."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_12345.join_event.location.y",
+				"new_field_name": "Player 12345 Join Event Vertical Location (Y Coordinate)",
+				"clarity_improvement_score": "4.0",
+				"justification": "The new field name clearly describes the data it represents by explicitly stating 'Player 12345 Join Event Vertical Location (Y Coordinate)', which is much more understandable than the old field name that includes technical path information. It improves clarity by being more descriptive and easier to interpret."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_67890.actions.item.action",
+				"new_field_name": "Player 67890 Actions on Game Items",
+				"clarity_improvement_score": "4.0",
+				"justification": "The new field name 'Player 67890 Actions on Game Items' is significantly clearer as it directly describes the content and context of the data, making it easier for users to understand its purpose compared to the old field name, which is overly technical and nested."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_12345.actions.item.drops.item",
+				"new_field_name": "Items_Dropped_By_Player_12345_During_Game_Events",
+				"clarity_improvement_score": "5.0",
+				"justification": "The new field name clearly communicates that it contains items dropped by a specific player during game events, making it significantly more understandable than the old name, which is overly technical and convoluted."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_12345.actions.item.location.x",
+				"new_field_name": "Player 12345 Game Action Item Horizontal Position on Map (X-Coordinate)",
+				"clarity_improvement_score": "5.0",
+				"justification": "The new field name explicitly describes the data it contains, specifying that it refers to the horizontal position of a game action item on the map. This is much clearer than the old field name, which is overly technical and difficult to interpret."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_12345.actions.item.crafted_item",
+				"new_field_name": "Player 12345 Crafted Items Log",
+				"clarity_improvement_score": "4.0",
+				"justification": "The new field name 'Player 12345 Crafted Items Log' is much clearer and more concise than the old field name 'events_log.game_events.player_12345.actions.item.crafted_item'. It directly indicates the content and context of the data, making it easier for users to understand what to expect."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_12345.actions.item.block.type",
+				"new_field_name": "Player 12345 Game Interaction Item Block Type",
+				"clarity_improvement_score": "4.0",
+				"justification": "The new field name 'Player 12345 Game Interaction Item Block Type' is significantly clearer and more user-friendly compared to the old field name. It uses plain language and a structured format that makes it easier to understand the context and purpose of the data."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_12345.actions.item.materials.item",
+				"new_field_name": "Player 12345 Collected and Used Items Log",
+				"clarity_improvement_score": "5.0",
+				"justification": "The new field name 'Player 12345 Collected and Used Items Log' is much clearer than the old field name. It explicitly states what the field represents (items collected and used by Player 12345), making it easier for users to understand its purpose without needing to parse a long, complex string."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_12345.actions.item.location.y",
+				"new_field_name": "Player 12345 Item Vertical Position (Y-Coordinate) in Game",
+				"clarity_improvement_score": "5.0",
+				"justification": "The new field name clearly describes the content and context of the data, specifying that it represents the vertical position (Y-coordinate) of an item associated with a specific player in the game, which is far more understandable than the old field name."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_12345.join_event.timestamp",
+				"new_field_name": "Event Join Timestamp for Player 12345",
+				"clarity_improvement_score": "4.0",
+				"justification": "The new field name 'Event Join Timestamp for Player 12345' is much clearer than the old field name. It explicitly states what the value represents (event join timestamp) and is easy to understand. The old field name is long and includes technical details that may not be immediately clear to all users."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_67890.actions.item.location.z",
+				"new_field_name": "Game Item Vertical Position (Z-coordinate)",
+				"clarity_improvement_score": "5.0",
+				"justification": "The new field name 'Game Item Vertical Position (Z-coordinate)' is significantly clearer than the old name. It succinctly describes the purpose of the field, indicating that it relates to the vertical position of a game item in a straightforward manner. In contrast, the old field name is overly complex and uses technical jargon that obscures its meaning."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_67890.actions.item.loot.item",
+				"new_field_name": "Player 67890 Looted Items During Gameplay",
+				"clarity_improvement_score": "5.0",
+				"justification": "The new field name 'Player 67890 Looted Items During Gameplay' clearly conveys the context and purpose of the data, indicating that it pertains to items looted by a specific player during gameplay, which is significantly clearer than the old field name that is overly technical and convoluted."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_67890.chat_event.message",
+				"new_field_name": "Player 67890 Chat Messages During Game Events",
+				"clarity_improvement_score": "4.0",
+				"justification": "The new field name 'Player 67890 Chat Messages During Game Events' clearly conveys the purpose and context of the data, making it much easier to understand compared to the old name which is overly technical and less intuitive."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_12345.actions.item.action",
+				"new_field_name": "Player 12345 Game Actions Log",
+				"clarity_improvement_score": "4.0",
+				"justification": "The new field name 'Player 12345 Game Actions Log' is significantly clearer and more concise than the old field name, which is overly complex and difficult to parse. It directly conveys the purpose of the data, making it easier for users to understand."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_67890.actions.item.tool",
+				"new_field_name": "Player 67890 Game Events Tool Usage",
+				"clarity_improvement_score": "4.0",
+				"justification": "The new field name 'Player 67890 Game Events Tool Usage' is much clearer than the old field name. It clearly indicates the subject (Player 67890), context (Game Events), and action (Tool Usage), making it easier for a user to understand the data it represents."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_67890.actions.item.location.y",
+				"new_field_name": "Player 67890 Item Vertical Location (Y-Axis) in Game",
+				"clarity_improvement_score": "4.0",
+				"justification": "The new field name clearly describes the content ('Player 67890 Item Vertical Location (Y-Axis) in Game') compared to the old name, which is overly technical and complex. The new name improves understanding for users by using plain language and a more accessible format."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_67890.actions.item.mob",
+				"new_field_name": "Player 67890 Game Interactions with Entities (e.g., Zombies)",
+				"clarity_improvement_score": "5.0",
+				"justification": "The new field name clearly indicates that it refers to player interactions with game entities, enhancing understanding compared to the old technical and convoluted name."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_67890.chat_event.channel",
+				"new_field_name": "Game Event Chat Channel Used by Player 67890",
+				"clarity_improvement_score": "4.0",
+				"justification": "The new field name 'Game Event Chat Channel Used by Player 67890' is much clearer as it explicitly states the purpose and context of the data, making it more understandable compared to the old name, which is overly technical and complex."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_12345.actions.item.block.drops.item",
+				"new_field_name": "ItemsDroppedByBlockWhenPlayerInteracts_Player12345",
+				"clarity_improvement_score": "4.0",
+				"justification": "The new field name 'ItemsDroppedByBlockWhenPlayerInteracts_Player12345' is significantly clearer as it concisely describes the action and context compared to the overly complex and nested old field name. It directly indicates what the data represents, improving understandability."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_67890.actions.item.timestamp",
+				"new_field_name": "Timestamp of Item Action for Player 67890",
+				"clarity_improvement_score": "5.0",
+				"justification": "The new field name is significantly clearer as it directly describes the content of the field, specifying that it is a timestamp related to item actions for a specific player. In contrast, the old field name is overly technical and convoluted, making it difficult to understand at a glance."
+			},
+			{
+				"old_field_name": "events_log.game_events.player_12345.actions.item.location.z",
+				"new_field_name": "Player 12345 Item Action Vertical Location (Height/Depth)",
+				"clarity_improvement_score": "4.0",
+				"justification": "The new field name clearly describes the contents and context of the data, specifying the player, item action, and the nature of the location (height/depth). This is a significant improvement from the old name which is more technical and less intuitive."
+			}
+		]
+	}
 }

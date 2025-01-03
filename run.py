@@ -132,6 +132,8 @@ def process_task_completion(task_id):
                 f.write(r.content)
 
             data = pd.read_csv(f"{task_path}/data.csv")
+            #create json file of first 10 rows
+            data = data.head(10)
             data.to_json(f"{task_path}/data.json", orient='records', indent=4)
 
         # Process task with graph runner
@@ -145,8 +147,8 @@ def process_task_completion(task_id):
 
         for field in output['field_mapping']:
             metadata_output['field_mapping'].append({
-                'new_field_name': field,
-                'old_field_name': output['field_mapping'][field],
+                'new_field_name': output['field_mapping'][field],
+                'old_field_name': field,
             })
         
         for field in output['enhanced_descriptions']:
