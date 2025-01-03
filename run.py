@@ -6,6 +6,7 @@ import json
 from dotenv import load_dotenv
 import traceback
 from gcloud import storage
+import pandas as pd
 
 load_dotenv()
 
@@ -109,6 +110,29 @@ def process_task_completion(task_id):
                     kb += '\n'+ description
                 with open(f"{task_path}/kb.txt", 'w') as f:
                     f.write(kb)
+
+        elif task_type == 'csv':
+            data_url = task['data_url']
+            kb_url = task['kb_url']
+            r = requests.get(data_url)
+            if kb_url and kb_url != 'null' and kb_url != '':
+                kb_r = requests.get(kb_url)
+                with open(f"{task_path}/kb.txt", 'wb') as f:
+                    f.write(kb_r.content)
+                with open(f"{task_path}/kb.txt", 'r') as f:
+                    kb = f.read()
+                    kb += '\n'+ description
+                with open(f"{task_path}/kb.txt", 'w') as f:
+                    f.write(kb)
+            else:
+                with open(f"{task_path}/kb.txt", 'w') as f:
+                    f.write(description)
+
+            with open(f"{task_path}/data.csv", 'wb') as f:
+                f.write(r.content)
+
+            data = pd.read_csv(f"{task_path}/data.csv")
+            data.to_json(f"{task_path}/data.json", orient='records', indent=4)
 
         # Process task with graph runner
         generator = GenerateCleanMetadata(data_path=f"{task_path}/data.json", kb_path=f"{task_path}/kb.txt", cache_path=f"{task_path}/")
