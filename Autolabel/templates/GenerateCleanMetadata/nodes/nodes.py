@@ -64,7 +64,7 @@ def generate_description(GenerateCleanMetadataStates : GenerateCleanMetadataStat
             field_info.description = response.description
         return field_info
     
-    with ThreadPoolExecutor(max_workers=20) as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         futures = [executor.submit(generate_desc, field_info) for field_info in GenerateCleanMetadataStates.field_info_list]
         field_info_list = []
         for future in as_completed(futures):
@@ -87,7 +87,7 @@ def generate_field_name(GenerateCleanMetadataStates : GenerateCleanMetadataState
             field_info.new_name = response.new_name
         return field_info
     
-    with ThreadPoolExecutor(max_workers=20) as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         futures = [executor.submit(generate_field, field_info) for field_info in GenerateCleanMetadataStates.field_info_list]
         field_info_list = []
         for future in as_completed(futures):
@@ -111,7 +111,7 @@ def access_semantic_clarity(GenerateCleanMetadataStates : GenerateCleanMetadataS
             field_info.semantic_justification = response.justification
         return field_info
     
-    with ThreadPoolExecutor(max_workers=20) as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         futures = [executor.submit(access_semantic, field_info) for field_info in GenerateCleanMetadataStates.field_info_list]
         field_info_list = []
         for future in as_completed(futures):
@@ -137,7 +137,7 @@ def regenerate_low_scoring_fields(GenerateCleanMetadataStates : GenerateCleanMet
             field_info.new_name = response.new_name
         return field_info
     
-    with ThreadPoolExecutor(max_workers=20) as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         futures = [executor.submit(generate_field, field_info) for field_info in low_scoring_fields]
         field_info_list = []
         for future in as_completed(futures):

@@ -10,8 +10,9 @@ client = storage.Client(credentials=credentials, project='assetgeneration')
 bucket = client.get_bucket('xg_live_ops')
 
 from src.utils.database import connect_to_mongo
-from runner import run_graph, get_changes_to_field_names
+import pandas as pd
 from src.utils.large_files_ops import rename_field_in_json
+from Autolabel.templates.GenerateCleanMetadata.GenerateCleanMetadata import GenerateCleanMetadata
 
 dotenv.load_dotenv()
 
@@ -26,66 +27,61 @@ def check_task_required_completion():
         'stage': 'active'
     })
 
-    inputs = []
-    temp_dir = os.getcwd() + '/temp'
-
+    task_list = []
     for task in tasks:
-        if 'touched' in task:
-            continue
-        # add 'touched' field to task
-        xg_mongo_db['tasks'].update_one({'_id': task['_id']}, {'$set': {'touched': True}})
+        task_list.append(str(task['_id']))
+
+    print('Tasks that require completion:', task_list)
+    return task_list
+
+def process_task_completion(task_id):
+    try:
+
+        task = xg_mongo_db['tasks'].find_one({'_id': task_id})
+        if not task:
+            return 
 
         user_id = task['userID']
-        task_id = task['_id']
-        if 'kb_url' in task:
-            kb_url = task['kb_url']
-        else:
-            kb_url = None
         description = task['description']
+        task_type = task['type']
+        task_path = f"temp/{user_id}/{task_id}"
 
-        if not os.path.exists(f"{temp_dir}/{user_id}/{task_id}"):
-            os.makedirs(f"{temp_dir}/{user_id}/{task_id}")
+        print(f"task_path : {task_path}")
 
-        if kb_url:
-            print('Downloading file from', kb_url)
-            r = requests.get(kb_url)
-            kb_file_name = 'kb_data.json'
-            with open(f"{temp_dir}/{user_id}/{task_id}/kb_data.txt", 'wb') as f:
-                f.write(r.content)
+        # Create task directory
+        os.makedirs(task_path, exist_ok=True)
 
-        #TODO : start processing task
-        if task['type'] == 'json':
+        # Handle task types
+        if task_type == 'json':
             data_url = task['data_url']
-            
-            
-            # Download the file
-            print('Downloading file from', data_url)
+            kb_url = task['kb_url']
             r = requests.get(data_url)
+            if kb_url and kb_url != 'null' and kb_url != '':
+                kb_r = requests.get(kb_url)
+                with open(f"{task_path}/kb.txt", 'wb') as f:
+                    f.write(kb_r.content)
+                with open(f"{task_path}/kb.txt", 'r') as f:
+                    kb = f.read()
+                    kb += '\n'+ description
+                with open(f"{task_path}/kb.txt", 'w') as f:
+                    f.write(kb)
+            else:
+                with open(f"{task_path}/kb.txt", 'w') as f:
+                    f.write(description)
 
-            with open(f"{temp_dir}/{user_id}/{task_id}/data.json", 'wb') as f:
+            with open(f"{task_path}/data.json", 'wb') as f:
                 f.write(r.content)
-            
-            inputs.append({
-                'user_id' : user_id,
-                'session_id' : task_id,
-                'data_info_from_user' : description,
-            })
 
-        if task['type'] == 'mongo':
+        elif task_type == 'mongo':
             source_id = task['sourceID']
             mongo_uri = xg_mongo_db['sources'].find_one({'_id': source_id})['url']
             collection = task['collection']
             db_name = task['db_name']
 
-            print(f"Connecting to mongo at {mongo_uri} and fetching data from {collection} in {db_name}")
-
-            #download all documents from mongo and save to data.json
             user_mongo_db = connect_to_mongo(mongo_uri, db_name)
             data = [doc for doc in user_mongo_db[collection].find()]
-            print('Downloaded data from mongo')
-            print(data)
-            
-            # Convert ObjectId to string for JSON serialization
+
+            # Convert ObjectId to string
             def convert_objectids(doc):
                 if isinstance(doc, dict):
                     return {k: convert_objectids(v) for k, v in doc.items()}
@@ -97,106 +93,93 @@ def check_task_required_completion():
                     return doc
 
             converted_documents = [convert_objectids(doc) for doc in data]
-            with open(f"{temp_dir}/{user_id}/{task_id}/data.json", 'w') as f:
+            with open(f"{task_path}/data.json", 'w') as f:
                 json.dump(converted_documents, f, indent=4)
-            
-            inputs.append({
-                'user_id' : user_id,
-                'session_id' : task_id,
-                'data_info_from_user' : description,
+
+            kb_url = task['kb_url']
+            if kb_url and kb_url != 'null' and kb_url != '':
+                kb_r = requests.get(kb_url)
+                with open(f"{task_path}/kb.txt", 'wb') as f:
+                    f.write(kb_r.content)
+                with open(f"{task_path}/kb.txt", 'r') as f:
+                    kb = f.read()
+                    kb += '\n'+ description
+                with open(f"{task_path}/kb.txt", 'w') as f:
+                    f.write(kb)
+
+        elif task_type == 'csv':
+            data_url = task['data_url']
+            kb_url = task['kb_url']
+            r = requests.get(data_url)
+            if kb_url and kb_url != 'null' and kb_url != '':
+                kb_r = requests.get(kb_url)
+                with open(f"{task_path}/kb.txt", 'wb') as f:
+                    f.write(kb_r.content)
+                with open(f"{task_path}/kb.txt", 'r') as f:
+                    kb = f.read()
+                    kb += '\n'+ description
+                with open(f"{task_path}/kb.txt", 'w') as f:
+                    f.write(kb)
+            else:
+                with open(f"{task_path}/kb.txt", 'w') as f:
+                    f.write(description)
+
+            with open(f"{task_path}/data.csv", 'wb') as f:
+                f.write(r.content)
+
+            data = pd.read_csv(f"{task_path}/data.csv")
+            #create json file of first 10 rows
+            data = data.head(10)
+            data.to_json(f"{task_path}/data.json", orient='records', indent=4)
+
+        # Process task with graph runner
+        generator = GenerateCleanMetadata(data_path=f"{task_path}/data.json", kb_path=f"{task_path}/kb.txt", cache_path=f"{task_path}/")
+        output = generator.run()
+        metadata_output = {
+            'field_mapping': [],
+            'enhanced_descriptions': [],
+            'semantic_clarity_report': []
+        }
+
+        for field in output['field_mapping']:
+            metadata_output['field_mapping'].append({
+                'new_field_name': output['field_mapping'][field],
+                'old_field_name': field,
             })
-
-    print('Tasks that require completion:', len(inputs))
-    print(inputs)
-    return inputs
-
-def process_tasks(inputs):
-    print('Processing tasks')
-    for input in inputs:
-        user_id = input['user_id']
-        task_id = input['session_id']
-        description = input['data_info_from_user']
-
-        #TODO : process the task
-        print('Processing task for user', user_id, 'with task ID', task_id, 'with description', description)
-        temp_dir = os.getcwd() + '/temp'
-
-        run_graph(user_id, task_id, 'data.json', description)
-
-        changes_df = get_changes_to_field_names(user_id, task_id)
-        fields_names = []
-        for index, row in changes_df.iterrows():
-            fields_names.append(
-                {
-                    'original_name': row['old_names'],
-                    'ai_suggested_name': row['new_name'],
-                    'score': row['score']
-                }
-            )
-        #if any score less than 3
-        if any(row['score'] < 3 for index, row in changes_df.iterrows()):
-            xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'status': 'paused'}})
-        else:
-            xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'status': 'paused'}})
-            xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'stage': 'complete'}})
-        xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'fields': fields_names}})
         
+        for field in output['enhanced_descriptions']:
+            metadata_output['enhanced_descriptions'].append({
+                'field_name': field,
+                'description': output['enhanced_descriptions'][field],
+            })
+        for field in output['semantic_clarity_report']:
+            metadata_output['semantic_clarity_report'].append(output['semantic_clarity_report'][field])
 
-    print('Tasks processed')
+        xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'status': 'paused', 'stage': 'complete', 'metadata_output': metadata_output}})
+        
+        with open(f"{task_path}/metadata_output.json", "w") as f:
+            json.dump(metadata_output, f, indent=4)
+        with open(f"{task_path}/metadata.json", "w") as f:
+            json.dump(output, f, indent=4)
+        return metadata_output
 
-def check_for_user_feedback():
-    tasks = xg_mongo_db['tasks'].find(
-    {'hasUserResponded': True},
-    {'_id': 1, 'userID': 1, 'description': 1, 'fields': 1}
-    )
+    except Exception as e:
+        #throw error
+        print(e)
 
+        return 404
+
+
+def process_tasks(tasks):
     for task in tasks:
-        user_id = task['userID']
-        task_id = task['_id']
-        description = task['description']
-        fields = task['fields']
-
-        #TODO : process the task
-        print('Processing task for user', user_id, 'with task ID', task_id, 'with description', description)
-        temp_dir = os.getcwd() + '/temp'
-
-        #download data 
-        blob = bucket.blob(f'{user_id}/tasks/{task_id}/out.json')
-        blob.download_to_filename(f"{temp_dir}/{user_id}/{task_id}/data_to_rename.json")
-
-        with open(f"{temp_dir}/{user_id}/{task_id}/data_to_rename.json") as f:
-            data = json.load(f)
-        
-        for field in fields:
-            if 'user_suggested_name' in field:
-                print('Renaming field', field['ai_suggested_name'], 'to', field['user_suggested_name'])
-                data = rename_field_in_json(data, field['ai_suggested_name'], field['user_suggested_name'])
-                field['ai_suggested_name'] = field['user_suggested_name']
-                field['score'] = 5
-        
-        with open(f"{temp_dir}/{user_id}/{task_id}/data_to_rename.json", 'w') as f:
-            json.dump(data, f, indent=4)
-        
-        blob = bucket.blob(f'{user_id}/tasks/{task_id}/out.json')
-        blob.upload_from_filename(f"{temp_dir}/{user_id}/{task_id}/data_to_rename.json")
-        blob.metadata = { "xg_live_ops" : "attachment", "content-disposition" : "attachment" }
-        blob.content_disposition = f"attachment; filename=data.json"
-        blob.patch()
-
-        xg_mongo_db['tasks'].update_one(
-            {'_id': task_id},
-            {'$set': {'status': 'paused', 'stage': 'complete', 'fields': fields}}
-        )
-
-        xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$unset': {'hasUserResponded': 1}})
-
+        with open('out.json', 'w') as f:
+            json.dump(process_task_completion(task), f, indent=4)
 
 
 if __name__ == '__main__':
     while True:
         try:
             process_tasks(check_task_required_completion())
-            check_for_user_feedback()
         except Exception as e:
             #check is log.txt exists
             if not os.path.exists('log.txt'):
