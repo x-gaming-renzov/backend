@@ -14,6 +14,8 @@ from runner import run_graph, get_changes_to_field_names
 from src.utils.large_files_ops import rename_field_in_json
 from oauth2client.service_account import ServiceAccountCredentials
 
+from Autolabel.templates.GenerateCleanMetadata.GenerateCleanMetadata import GenerateCleanMetadata
+
 # Initialize Flask app
 app = Flask(__name__)
 
@@ -54,7 +56,18 @@ def process_task_completion(task_id):
         # Handle task types
         if task_type == 'json':
             data_url = task['data_url']
+            kb_url = task['kb_url']
             r = requests.get(data_url)
+            if kb_url and kb_url != 'null' and kb_url != '':
+                kb_r = requests.get(kb_url)
+                with open(f"{task_path}/kb.txt", 'wb') as f:
+                    f.write(kb_r.content)
+                with open(f"{task_path}/kb.txt", 'r') as f:
+                    kb = f.read()
+                    kb += '\n'+ description
+                with open(f"{task_path}/kb.txt", 'w') as f:
+                    f.write(kb)
+
             with open(f"{task_path}/data.json", 'wb') as f:
                 f.write(r.content)
 
@@ -82,27 +95,22 @@ def process_task_completion(task_id):
             with open(f"{task_path}/data.json", 'w') as f:
                 json.dump(converted_documents, f, indent=4)
 
+            kb_url = task['kb_url']
+            if kb_url and kb_url != 'null' and kb_url != '':
+                kb_r = requests.get(kb_url)
+                with open(f"{task_path}/kb.txt", 'wb') as f:
+                    f.write(kb_r.content)
+                with open(f"{task_path}/kb.txt", 'r') as f:
+                    kb = f.read()
+                    kb += '\n'+ description
+                with open(f"{task_path}/kb.txt", 'w') as f:
+                    f.write(kb)
+
         # Process task with graph runner
-        run_graph(user_id, task_id, 'data.json', description)
-        changes_df = get_changes_to_field_names(user_id, task_id)
+        generator = GenerateCleanMetadata(data_path=f"{task_path}/data.json", kb_path=f"{task_path}/kb.txt", cache_path=f"{task_path}/")
+        metadata_output = generator.run()
 
-        # Update field changes in MongoDB
-        fields_names = []
-        for index, row in changes_df.iterrows():
-            fields_names.append(
-                {
-                    'original_name': row['old_names'],
-                    'ai_suggested_name': row['new_name'],
-                    'score': row['score']
-                }
-            )
-
-        if any(row['score'] < 3 for index, row in changes_df.iterrows()):
-            xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'status': 'paused'}})
-        else:
-            xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'status': 'paused', 'stage': 'complete'}})
-
-        xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'fields': fields_names}})
+        xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'status': 'paused', 'stage': 'complete', 'metadata_output': metadata_output}})
 
         return jsonify({'status': 'success', 'message': f'Task {task_id} completed'})
 
