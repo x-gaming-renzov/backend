@@ -136,7 +136,26 @@ def process_task_completion(task_id):
 
         # Process task with graph runner
         generator = GenerateCleanMetadata(data_path=f"{task_path}/data.json", kb_path=f"{task_path}/kb.txt", cache_path=f"{task_path}/")
-        metadata_output = generator.run()
+        output = generator.run()
+        metadata_output = {
+            'field_mapping': [],
+            'enhanced_descriptions': [],
+            'semantic_clarity_report': []
+        }
+
+        for field in output['field_mapping']:
+            metadata_output['field_mapping'].append({
+                'new_field_name': field,
+                'old_field_name': output['field_mapping'][field],
+            })
+        
+        for field in output['enhanced_descriptions']:
+            metadata_output['enhanced_descriptions'].append({
+                'field_name': field,
+                'description': output['enhanced_descriptions'][field],
+            })
+        for field in output['semantic_clarity_report']:
+            metadata_output['semantic_clarity_report'].append(output['semantic_clarity_report'][field])
 
         xg_mongo_db['tasks'].update_one({'_id': task_id}, {'$set': {'status': 'paused', 'stage': 'complete', 'metadata_output': metadata_output}})
 
@@ -223,5 +242,4 @@ def health_check():
     return jsonify({'status': 'healthy'}), 200
 
 if __name__ == '__main__':
-    #app.run(host='0.0.0.0', port=(os.getenv('PORT', 8080)),debug=True)
-    process_task_completion('eb36b4ba-3217-4da2-9f72-7db9e1920261')
+    app.run(host='0.0.0.0', port=(os.getenv('PORT', 8080)),debug=True)
