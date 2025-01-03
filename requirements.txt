@@ -174,3 +174,5 @@ wrapt==1.17.0
 yarl==1.18.0
 yml==0.0.1
 zipp==3.21.0
+mem0ai
+ijson
